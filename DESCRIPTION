@@ -1,13 +1,13 @@
 Package: simulatr
-Title: What the Package Does (One Line, Title Case)
+Title: Portable and Scalable Simulations
 Version: 0.0.0.9000
 Authors@R: 
-    person(given = "First",
-           family = "Last",
+    person(given = "Tim",
+           family = "Barry",
            role = c("aut", "cre"),
-           email = "first.last@example.com",
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
+           email = "tbarry2@andrew.cmu.edu",
+           comment = c(ORCID = "0000-0002-4356-627X"))
+Description: Simulation studies play a crucial role in the development and assessment of statistical methods. However, writing portable and scalable simulation code can be challenging. Simulatr decouples the *specification* of a simulation from the *execution* of a simulation, enabling users to develop a simulation study on their laptop and seamlessly run the simulation at-scale on a distributed computing platform. Supported platforms include high-performance computing clusters and cloud computing services (e.g., Microsoft Azure, Amazon Web Services, etc.).
 License: `use_mit_license()`, `use_gpl3_license()` or friends to
     pick a license
 Encoding: UTF-8
