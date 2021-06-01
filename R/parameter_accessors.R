@@ -42,18 +42,33 @@ get_param_from_simulatr_spec <- function(simulatr_spec, row_idx, param) {
 get_params_for_nextflow <- function(simulatr_spec, fp) {
   # n param settings
   n_param_settings <- nrow(simulatr_spec@parameter_grid)
-  # n cores
-  n_cores <- simulatr_spec@fixed_parameters[["n_cores"]]
   # methods
   method_names <- paste0(names(simulatr_spec@run_method_functions), collapse = "-")
   # write to file
   to_write_list <- list("n_param_settings" = n_param_settings,
-                   "n_cores" = n_cores,
                    "method_names" = method_names)
   lines <- sapply(seq(1, length(to_write_list)), function(i)
     paste0(names(to_write_list[i]), ":", to_write_list[i]))
   fcon <- file(fp)
   writeLines(lines, fcon)
   close(fcon)
-  return(NULL)
+}
+
+
+#' Update B in a simulatr_specifier object
+#'
+#' Takes a simulatr_specifier object and a value for B; updates B and return a new object.
+#'
+#' @return an updated simulatr_specifier object
+#' @export
+update_B_sim_spec <- function(simulatr_spec, B) {
+  if ("B" %in% colnames(simulatr_spec@parameter_grid)) {
+    simulatr_spec@parameter_grid$B <- B
+  } else if ("B" %in% names(simulatr_spec@fixed_parameters)) {
+    simulatr_spec@fixed_parameters[["B"]] <- B
+  } else {
+    stop("'B' is not present in the parameter grid or fixed parameter list in the simulatr specifier object.
+         Add 'B' to either of these fields to access B from the command line.")
+  }
+  return(simulatr_spec)
 }

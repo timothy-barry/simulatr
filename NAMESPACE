@@ -2,7 +2,9 @@
 
 export(get_param_from_simulatr_spec)
 export(get_params_for_nextflow)
+export(setup_script)
 export(simulatr_function)
 export(simulatr_specifier)
+export(update_B_sim_spec)
 import(methods)
 importFrom(magrittr,"%>%")
