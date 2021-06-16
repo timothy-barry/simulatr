@@ -72,7 +72,7 @@ get_example_simulatr_specifier <- function() {
     out <- data.frame(
       parameter = c("beta_0", "beta_1"),
       Estimate = s[, "Estimate"],
-      p_val = s[, "Pr(>|t|)"] ) %>% pivot_longer(
+      p_val = s[, "Pr(>|t|)"]) %>% pivot_longer(
         cols = c("Estimate", "p_val"),
         names_to = "target")
     return(out)
