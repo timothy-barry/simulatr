@@ -22,5 +22,6 @@ Note: possibly add timer and parallelization.
 }
 \examples{
 simulatr_spec <- readRDS("/Users/timbarry/research_offsite/glmeiv/private/simulations/sim_spec_1.rds")
-check <- check_simulatr_specifier_object(simulatr_spec, 2)
+simulatr_spec@fixed_parameters[["n"]] <- 500
+check <- check_simulatr_specifier_object(simulatr_spec, 5)
 }

@@ -36,7 +36,7 @@ summarize_results <- function(simulatr_specifier, raw_result_df, metrics) {
 #' Computes the bias of an estimator.
 #'
 #' @param tbl data frame with columns target and value. Target should have entry "estimate."
-#' @key data frame with columns for parameter and grid_row_id
+#' @param data frame with columns for parameter and grid_row_id
 #' @param simulatr_specifier a simulatr specifier object
 #'
 #' @return a 1-row tibble with columns value, lower_mc_ci, and upper_mc_ci
