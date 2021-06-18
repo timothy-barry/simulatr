@@ -4,24 +4,24 @@
 \alias{check_simulatr_specifier_object}
 \title{Check simulatr specifier object}
 \usage{
-check_simulatr_specifier_object(simulatr_spec, B_in = NULL)
+check_simulatr_specifier_object(simulatr_spec, B_in = NULL, parallel = TRUE)
 }
 \arguments{
 \item{simulatr_spec}{a simulatr_specifier object}
 
-\item{B_in}{number of resamples to use}
+\item{B_in}{(default determined by simulatr_spec) number of resamples to use}
+
+\item{parallel}{(default true) parallelize execution?}
 }
 \value{
 if no errors, the list of results; if errors occur, the ordered list of arguments passed to the function in which the error occurred.
 }
 \description{
-Checks a simulatr specifier object for errors or warnings.
-}
-\details{
-Note: possibly add timer and parallelization.
+Checks a simulatr specifier object for correctness.
 }
 \examples{
 simulatr_spec <- readRDS("/Users/timbarry/research_offsite/glmeiv/private/simulations/sim_spec_1.rds")
-simulatr_spec@fixed_parameters[["n"]] <- 500
+simulatr_spec@parameter_grid  <- simulatr_spec@parameter_grid[1:10,]
+simulatr_spec@fixed_parameters[["n"]] <- 2000
 check <- check_simulatr_specifier_object(simulatr_spec, 5)
 }
