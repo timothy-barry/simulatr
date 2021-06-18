@@ -97,7 +97,7 @@ check_simulatr_specifier_object <- function(simulatr_spec, B_in = NULL, parallel
         # get B
         B <- length(data_list)
         # run method, while clocking time and looking for errors
-        time <- system.time(if (method_object@loop) {
+        time <- suppressMessages(system.time(if (method_object@loop) {
           result_list <- lapply(seq(1, length(data_list)), function(i) {
             ordered_args[[1]] <- data_list[[i]]
             out <- do.call(method_object@f, ordered_args)
@@ -107,12 +107,12 @@ check_simulatr_specifier_object <- function(simulatr_spec, B_in = NULL, parallel
         } else {
           ordered_args[[1]] <- data_list
           result_df <- do.call(method_object@f, ordered_args)
-        })[["elapsed"]]/B
+        })[["elapsed"]]/B)
         return(list(error = FALSE, warning = FALSE, time = time, result_df = result_df))
       }, error = function(e) {
         return(list(error = TRUE, warning = FALSE, ordered_args = ordered_args, msg = e))
       }, warning = function(w) {
-        return(list(error = FALSE, warning = TRUE, time = NA, result_df = result_df, msg = w))
+        return(list(error = FALSE, warning = TRUE, time = NA, result_df = NA, msg = w))
       })
     })
     query_funct <- check_funct_helper(method_out, method_name)
@@ -140,14 +140,16 @@ check_funct_helper <- function(out_list, funct_name) {
       cat(paste0("Grid row ", issue_idx, ": "))
       message(out_list[[issue_idx]]$msg); cat("\n")
     }
+    cat("\n")
   }
   # define default output
   ret <- list(stop_funct = FALSE)
   # check errors
   if (any(errors)) {
     f(errors, funct_name, "error")
-    cat("Aborting function and returning list of arguments corresponding to each row that produced an error.\n")
+    cat(paste0("Aborting function and returning list of arguments corresponding to rows that produced errors for function \`", funct_name, "\`.\n"))
     ret_val <- lapply(out_list[errors], function(i) i$ordered_args)
+    if (length(ret_val) == 1) ret_val <- ret_val[[1]]
     ret <- list(stop_funct = TRUE, ret_val = ret_val)
   }
   # check warnings
@@ -156,4 +158,3 @@ check_funct_helper <- function(out_list, funct_name) {
   }
   return(ret)
 }
-
