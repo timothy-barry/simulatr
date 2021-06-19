@@ -9,12 +9,22 @@
 #'
 #' @return A `simulatr_function` object
 #' @export
-simulatr_function <- function(f, arg_names = NA_character_, packages = NA_character_, loop = FALSE) {
+simulatr_function <- function(f,
+                              arg_names = NA_character_,
+                              packages = NA_character_,
+                              loop = FALSE,
+                              one_rep_time = NA_real_,
+                              mult_time_factor = 1.5,
+                              add_time_factor = 30
+                              ) {
   new(Class = "simulatr_function",
       f = f,
       arg_names = arg_names,
       packages = packages,
-      loop = loop)
+      loop = loop,
+      one_rep_time = one_rep_time,
+      mult_time_factor = mult_time_factor,
+      add_time_factor = add_time_factor)
 }
 
 
@@ -29,7 +39,10 @@ simulatr_function <- function(f, arg_names = NA_character_, packages = NA_charac
 #'
 #' @return a `simulatr_specifier` object
 #' @export
-simulatr_specifier <- function(parameter_grid, fixed_parameters, generate_data_function, run_method_functions) {
+simulatr_specifier <- function(parameter_grid,
+                               fixed_parameters,
+                               generate_data_function,
+                               run_method_functions) {
   new(Class = "simulatr_specifier",
       parameter_grid = parameter_grid,
       fixed_parameters = fixed_parameters,

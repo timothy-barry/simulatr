@@ -5,7 +5,7 @@
 #' If the parameter is present in both the parameter grid and the fixed parameter list, returns value from parameter grid. If parameter is not present in either, throws an error.
 #'
 #' @param simulatr_spec a simulatr_specifier object
-#' @param row_idx index giving the row of the parameter grid
+#' @param row_idx index giving the row of the parameter grid; if NULL, returns all values (if parameter stored in grid) or fixed value (if parameter stored in fixed params list)
 #' @param param name of the parameter
 #'
 #' @return the value of the requested parameter
@@ -19,7 +19,7 @@ get_param_from_simulatr_spec <- function(simulatr_spec, row_idx, param) {
   param_grid <- simulatr_spec@parameter_grid
   fixed_params <- simulatr_spec@fixed_parameters
   if (param %in% colnames(param_grid)) {
-    param_grid[row_idx, param]
+    if (is.null(row_idx)) param_grid[, param] else param_grid[row_idx, param]
   } else if (param %in% names(fixed_params)) {
     fixed_params[[param]]
   } else {
@@ -36,19 +36,34 @@ get_param_from_simulatr_spec <- function(simulatr_spec, row_idx, param) {
 #'
 #' @param simulatr_spec the simulatr_specification object
 #' @param fp a file path
+#' @param B_in value of B passed to command line; B = 0 indicates no argument passed
 #'
 #' @return NULL
 #' @export
-get_params_for_nextflow <- function(simulatr_spec, fp) {
-  # n param settings
+#' @examples
+#' simulatr_spec <- readRDS("/Users/timbarry/research_offsite/glmeiv/private/simulations/sim_spec_ex.rds")
+get_params_for_nextflow <- function(simulatr_spec, fp, B_in) {
+  # Basic quantities
+  method_names <- names(simulatr_spec@run_method_functions)
+  n_processors <- get_param_from_simulatr_spec(simulatr_spec, NULL, "n_processors")
   n_param_settings <- nrow(simulatr_spec@parameter_grid)
-  # methods
-  method_names <- paste0(names(simulatr_spec@run_method_functions), collapse = "-")
+  # B
+  B <- if (B_in == 0) get_param_from_simulatr_spec(simulatr_spec, NULL, "B") else B_in
+  # wall times
+  method_times <- lapply(simulatr_spec@run_method_functions, function(funct_object)
+    ceiling((funct_object@mult_time_factor * B * funct_object@one_rep_time)/n_processors + funct_object@add_time_factor))
+  data_generator <- simulatr_spec@generate_data_function
+  data_generator_time <- ceiling(data_generator@mult_time_factor * B * data_generator@one_rep_time + data_generator@add_time_factor)
+  # Put everything into list
+  to_write_list <- c(list(method_names = method_names,
+                        n_param_settings = n_param_settings,
+                        data_generator = data_generator_time),
+                     method_times)
+
   # write to file
-  to_write_list <- list("n_param_settings" = n_param_settings,
-                   "method_names" = method_names)
-  lines <- sapply(seq(1, length(to_write_list)), function(i)
-    paste0(names(to_write_list[i]), ":", to_write_list[i]))
+  rhs <- sapply(to_write_list, function(entry) paste0(entry, collapse = "-"))
+  lhs <- names(to_write_list)
+  lines <- paste0(lhs, ":", rhs)
   fcon <- file(fp)
   writeLines(lines, fcon)
   close(fcon)

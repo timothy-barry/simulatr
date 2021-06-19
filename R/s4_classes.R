@@ -2,7 +2,10 @@ simulatr_function <- setClass("simulatr_function",
                               slots = list(f = "function",
                                            arg_names = "character",
                                            packages = "character",
-                                           loop = "logical"))
+                                           loop = "logical",
+                                           one_rep_time = "numeric",
+                                           mult_time_factor = "numeric",
+                                           add_time_factor = "numeric"))
 
 check_validity_simulatr_specifier <- function(object) {
   all_params <- union(colnames(object@parameter_grid), names(object@fixed_parameters))

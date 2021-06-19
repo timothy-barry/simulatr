@@ -38,7 +38,7 @@ check_simulatr_specifier_object <- function(simulatr_spec, B_in = NULL, parallel
   packs_to_load <- data_generator@packages
   if (!(identical(packs_to_load, NA_character_))) invisible(lapply(packs_to_load, function(pack) library(pack, character.only = TRUE)))
 
-  cat("Generating data.\n")
+  cat("Generating data...\n")
   # Generate the synthetic data
   data_generation_out <- my_lapply(X = seq(1, n_param_settings), FUN = function(row_idx) {
     # set seed for given row
@@ -78,7 +78,7 @@ check_simulatr_specifier_object <- function(simulatr_spec, B_in = NULL, parallel
   result_lists <- method_times <- vector(mode = "list", length = n_methods)
   names(result_lists) <- names(method_times) <- method_names
   for (method_name in method_names) {
-    cat(paste0("Running method \'", method_name, "\'.\n"))
+    cat(paste0("Running method \'", method_name, "\'...\n"))
     method_object <- simulatr_spec@run_method_functions[[method_name]]
     packs_to_load <- method_object@packages
     if (!(identical(packs_to_load, NA_character_))) invisible(lapply(packs_to_load, function(pack)
@@ -121,7 +121,12 @@ check_simulatr_specifier_object <- function(simulatr_spec, B_in = NULL, parallel
     method_times[[method_name]] <- sapply(method_out, function(i) i$time)
     result_lists[[method_name]] <- lapply(method_out, function(i) i$result_df)
   }
-  cat("The input simulatr specifier object is specified correctly.\n")
+  n_warnings <- c(data_generation_times, unlist(method_times)) %>% is.na() %>% sum()
+  if (n_warnings == 0) {
+    cat("\nSUMMARY: The simulatr specifier object is specified correctly!\n")
+  } else {
+    cat(paste0("\nSUMMARY: There are ", n_warnings, " warnings (see above). Otherwise, simulatr specifier object is specified correctly.\n"))
+  }
   return(list(data = data_lists, results = result_lists, data_generation_times = data_generation_times, method_times = method_times))
 }
 
@@ -134,7 +139,7 @@ check_funct_helper <- function(out_list, funct_name) {
     issue_idxs <- which(issues)
     msg1 <- paste0("The \'", funct_name, "\' function produced ", issue_type,"s for the following parameter grid rows: ")
     msg2 <- paste0(issue_idxs, collapse = ",")
-    msg3 <- paste0(msg1, msg2, ". The ", issue_type," messages were as follows: \n")
+    msg3 <- paste0(msg1, msg2, ". The ", issue_type," messages are as follows: \n")
     cat(msg3)
     for (issue_idx in issue_idxs) {
       cat(paste0("Grid row ", issue_idx, ": "))

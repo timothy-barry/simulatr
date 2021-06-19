@@ -8,7 +8,10 @@ simulatr_function(
   f,
   arg_names = NA_character_,
   packages = NA_character_,
-  loop = FALSE
+  loop = FALSE,
+  one_rep_time = NA_real_,
+  mult_time_factor = 1.5,
+  add_time_factor = 30
 )
 }
 \arguments{
