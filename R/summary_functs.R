@@ -10,10 +10,15 @@
 #' @export
 #'
 #' @examples
-#' simulatr_specifier <- readRDS("/Users/timbarry/research_offsite/glmeiv/private/simulations/sim_spec_1.rds")
-#' raw_result_df <- readRDS("/Users/timbarry/research_offsite/glmeiv/private/simulations/result.rds")
-#' raw_result_df <- dplyr::filter(raw_result_df, parameter %in% c("m_perturbation", "g_perturbation", "pi"))
+#' \dontrun{
+#' simulatr_specifier <-
+#' readRDS("/Users/timbarry/research_offsite/glmeiv/private/simulations/sim_spec_1.rds")
+#' raw_result_df <-
+#' readRDS("/Users/timbarry/research_offsite/glmeiv/private/simulations/result.rds")
+#' raw_result_df <- dplyr::filter(raw_result_df,
+#' parameter %in% c("m_perturbation", "g_perturbation", "pi"))
 #' metrics <- c("bias", "coverage")
+#' }
 summarize_results <- function(simulatr_specifier, raw_result_df, metrics) {
   raw_result_df$grid_row_id <- as.integer(as.character(raw_result_df$grid_row_id))
   funts_to_apply <- purrr::set_names(paste0("compute_", metrics), metrics)
@@ -36,7 +41,7 @@ summarize_results <- function(simulatr_specifier, raw_result_df, metrics) {
 #' Computes the bias of an estimator.
 #'
 #' @param tbl data frame with columns target and value. Target should have entry "estimate."
-#' @param data frame with columns for parameter and grid_row_id
+#' @param key data frame with columns for parameter and grid_row_id
 #' @param simulatr_specifier a simulatr specifier object
 #'
 #' @return a 1-row tibble with columns value, lower_mc_ci, and upper_mc_ci
@@ -64,7 +69,7 @@ compute_coverage <- function(tbl, key, simulatr_specifier) {
   parameter <- as.character(key$parameter); grid_row_id <- key$grid_row_id
   ground_truth <- get_param_from_simulatr_spec(simulatr_specifier, grid_row_id, parameter)
   covered <- dplyr::filter(tbl, target %in% c("confint_lower", "confint_higher")) %>%
-    tidyr::pivot_wider(id_cols = "id", names_from = target, values_from = value) %>% na.omit() %>%
+    tidyr::pivot_wider(id_cols = "id", names_from = target, values_from = value) %>% stats::na.omit() %>%
     dplyr::mutate(covered = (confint_lower <= ground_truth && confint_higher >= ground_truth)) %>%
     dplyr::pull(covered)
   coverage <- mean(covered)

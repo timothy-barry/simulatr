@@ -20,8 +20,13 @@ a data frame of summarized results
 Summarizes the results of a \code{simulatr} simulation.
 }
 \examples{
-simulatr_specifier <- readRDS("/Users/timbarry/research_offsite/glmeiv/private/simulations/sim_spec_1.rds")
-raw_result_df <- readRDS("/Users/timbarry/research_offsite/glmeiv/private/simulations/result.rds")
-raw_result_df <- dplyr::filter(raw_result_df, parameter \%in\% c("m_perturbation", "g_perturbation", "pi"))
+\dontrun{
+simulatr_specifier <-
+readRDS("/Users/timbarry/research_offsite/glmeiv/private/simulations/sim_spec_1.rds")
+raw_result_df <-
+readRDS("/Users/timbarry/research_offsite/glmeiv/private/simulations/result.rds")
+raw_result_df <- dplyr::filter(raw_result_df,
+parameter \%in\% c("m_perturbation", "g_perturbation", "pi"))
 metrics <- c("bias", "coverage")
+}
 }

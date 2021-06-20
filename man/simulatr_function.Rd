@@ -22,6 +22,12 @@ simulatr_function(
 \item{packages}{packages to load before calling f, stored as a character vector.}
 
 \item{loop}{boolean indicating whether f should be called within a loop.}
+
+\item{one_rep_time}{amount of time it takes for function to exeecute setting B = 1 (optional)}
+
+\item{mult_time_factor}{time requested for given function is (one_rep_time)(B)(mult_time_factor)/n_processors + add_time_factor}
+
+\item{add_time_factor}{see above}
 }
 \value{
 A \code{simulatr_function} object

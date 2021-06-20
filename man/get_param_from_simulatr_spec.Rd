@@ -22,8 +22,3 @@ Returns the requested parameter from a simulatr_specifier object.
 \details{
 If the parameter is present in both the parameter grid and the fixed parameter list, returns value from parameter grid. If parameter is not present in either, throws an error.
 }
-\examples{
-load_all()
-simulatr_spec <- get_example_simulatr_specifier()
-get_param_from_simulatr_spec(simulatr_spec, 10, "beta_1")
-}

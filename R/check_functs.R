@@ -10,10 +10,13 @@
 #' @export
 #'
 #' @examples
-#' simulatr_spec <- readRDS("/Users/timbarry/research_offsite/glmeiv/private/simulations/sim_spec_1.rds")
+#' \dontrun{
+#' simulatr_spec <-
+#' readRDS("/Users/timbarry/research_offsite/glmeiv/private/simulations/sim_spec_1.rds")
 #' simulatr_spec@parameter_grid  <- simulatr_spec@parameter_grid[1:10,]
 #' simulatr_spec@fixed_parameters[["n"]] <- 2000
 #' check <- check_simulatr_specifier_object(simulatr_spec, 5)
+#' }
 check_simulatr_specifier_object <- function(simulatr_spec, B_in = NULL, parallel = TRUE) {
   # decide which lapply function to use
   if (parallel) {

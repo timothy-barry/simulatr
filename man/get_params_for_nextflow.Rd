@@ -19,6 +19,3 @@ Given a file path fp, writes all parameters to which nextflow needs access to a 
 \details{
 Parameters are separated by line. Each line is of the form "param:value," where "param" is the name of the parameter and "value" is its value.
 }
-\examples{
-simulatr_spec <- readRDS("/Users/timbarry/research_offsite/glmeiv/private/simulations/sim_spec_ex.rds")
-}

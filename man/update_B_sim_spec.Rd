@@ -6,6 +6,11 @@
 \usage{
 update_B_sim_spec(simulatr_spec, B)
 }
+\arguments{
+\item{simulatr_spec}{a simulatr specifier object}
+
+\item{B}{the new value of B}
+}
 \value{
 an updated simulatr_specifier object
 }

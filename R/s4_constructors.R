@@ -6,6 +6,9 @@
 #' @param arg_names the (ordered) names of parameters (from the parameter grid or list of fixed parameters) to pass to f.
 #' @param packages packages to load before calling f, stored as a character vector.
 #' @param loop boolean indicating whether f should be called within a loop.
+#' @param one_rep_time amount of time it takes for function to exeecute setting B = 1 (optional)
+#' @param mult_time_factor time requested for given function is (one_rep_time)(B)(mult_time_factor)/n_processors + add_time_factor
+#' @param add_time_factor see above
 #'
 #' @return A `simulatr_function` object
 #' @export
@@ -54,17 +57,14 @@ simulatr_specifier <- function(parameter_grid,
 #' get example simulatr_specifier
 #'
 #' @return an example simulatr specifier object
-#' @examples
-#' load_all()
-#' get_example_simulatr_specifier()
 get_example_simulatr_specifier <- function() {
   ##########################
   # Data generation function
   ##########################
   # Function
   generate_lm_data <- function(beta_0, beta_1, sigma, n) {
-    x <- rnorm(n)
-    ep <- rnorm(n, sd = sigma)
+    x <- stats::rnorm(n)
+    ep <- stats::rnorm(n, sd = sigma)
     y <- beta_0 + beta_1 * x + ep
     data.frame(y = y, x = x)
   }
@@ -79,13 +79,13 @@ get_example_simulatr_specifier <- function() {
   ##################
   # method
   fit_lm <- function(df) {
-    fit <- lm(y ~ x, data = df)
+    fit <- stats::lm(y ~ x, data = df)
     s <- summary(fit)$coefficients
     row.names(s) <- NULL
     out <- data.frame(
       parameter = c("beta_0", "beta_1"),
       Estimate = s[, "Estimate"],
-      p_val = s[, "Pr(>|t|)"]) %>% pivot_longer(
+      p_val = s[, "Pr(>|t|)"]) %>% tidyr::pivot_longer(
         cols = c("Estimate", "p_val"),
         names_to = "target")
     return(out)
@@ -100,7 +100,7 @@ get_example_simulatr_specifier <- function() {
   silly_competitor <- function(df, sigma) {
     out <- data.frame(parameter = c("beta_1", "beta_1"),
                       target = c("Estimate", "p_val"),
-                      value = c(rnorm(1, sd = sigma), runif(1)))
+                      value = c(stats::rnorm(1, sd = sigma), stats::runif(1)))
     return(out)
   }
   # Simulatr function object

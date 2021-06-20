@@ -7,7 +7,7 @@
 #' @param function_object either a method or data generation simulatr_function object
 #' @param row_idx row index of the parameter grid
 #'
-#' @return
+#' @return a list with updated sim_spec object and ordered list of args
 #' @export
 setup_script <- function(simulatr_spec, B_in, function_object, row_idx) {
   # 1. set the seed

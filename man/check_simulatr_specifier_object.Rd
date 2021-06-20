@@ -20,8 +20,11 @@ if no errors, the list of results; if errors occur, the ordered list of argument
 Checks a simulatr specifier object for correctness.
 }
 \examples{
-simulatr_spec <- readRDS("/Users/timbarry/research_offsite/glmeiv/private/simulations/sim_spec_1.rds")
+\dontrun{
+simulatr_spec <-
+readRDS("/Users/timbarry/research_offsite/glmeiv/private/simulations/sim_spec_1.rds")
 simulatr_spec@parameter_grid  <- simulatr_spec@parameter_grid[1:10,]
 simulatr_spec@fixed_parameters[["n"]] <- 2000
 check <- check_simulatr_specifier_object(simulatr_spec, 5)
+}
 }

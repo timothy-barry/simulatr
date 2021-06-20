@@ -11,10 +11,6 @@
 #' @return the value of the requested parameter
 #'
 #' @export
-#' @examples
-#' load_all()
-#' simulatr_spec <- get_example_simulatr_specifier()
-#' get_param_from_simulatr_spec(simulatr_spec, 10, "beta_1")
 get_param_from_simulatr_spec <- function(simulatr_spec, row_idx, param) {
   param_grid <- simulatr_spec@parameter_grid
   fixed_params <- simulatr_spec@fixed_parameters
@@ -40,8 +36,6 @@ get_param_from_simulatr_spec <- function(simulatr_spec, row_idx, param) {
 #'
 #' @return NULL
 #' @export
-#' @examples
-#' simulatr_spec <- readRDS("/Users/timbarry/research_offsite/glmeiv/private/simulations/sim_spec_ex.rds")
 get_params_for_nextflow <- function(simulatr_spec, fp, B_in) {
   # Basic quantities
   method_names <- names(simulatr_spec@run_method_functions)
@@ -83,6 +77,9 @@ get_params_for_nextflow <- function(simulatr_spec, fp, B_in) {
 #' Update B in a simulatr_specifier object
 #'
 #' Takes a simulatr_specifier object and a value for B; updates B and return a new object.
+#'
+#' @param simulatr_spec a simulatr specifier object
+#' @param B the new value of B
 #'
 #' @return an updated simulatr_specifier object
 #' @export

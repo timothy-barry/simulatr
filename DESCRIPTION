@@ -1,5 +1,5 @@
 Package: simulatr
-Title: Portable and Scalable Simulations
+Title: Design Portable and Scalable Simulation Studies
 Version: 0.0.0.9000
 Authors@R: 
     person(given = "Tim",
@@ -16,4 +16,10 @@ RoxygenNote: 7.1.1
 Imports: 
     methods,
     magrittr,
-    dplyr
+    dplyr,
+    purrr,
+    tibble,
+    tidyr
+Suggests: 
+    future,
+    future.apply

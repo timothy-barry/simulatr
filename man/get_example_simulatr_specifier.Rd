@@ -12,7 +12,3 @@ an example simulatr specifier object
 \description{
 get example simulatr_specifier
 }
-\examples{
-load_all()
-get_example_simulatr_specifier()
-}

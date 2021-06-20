@@ -16,7 +16,7 @@ setup_script(simulatr_spec, B_in, function_object, row_idx)
 \item{row_idx}{row index of the parameter grid}
 }
 \value{
-
+a list with updated sim_spec object and ordered list of args
 }
 \description{
 Runs setup for either the generate_data.R script or run_methods.R script.
