@@ -9,7 +9,7 @@ get_param_from_simulatr_spec(simulatr_spec, row_idx, param)
 \arguments{
 \item{simulatr_spec}{a simulatr_specifier object}
 
-\item{row_idx}{index giving the row of the parameter grid}
+\item{row_idx}{index giving the row of the parameter grid; if NULL, returns all values (if parameter stored in grid) or fixed value (if parameter stored in fixed params list)}
 
 \item{param}{name of the parameter}
 }

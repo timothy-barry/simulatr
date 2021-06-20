@@ -4,12 +4,14 @@
 \alias{get_params_for_nextflow}
 \title{Get params for nextflow}
 \usage{
-get_params_for_nextflow(simulatr_spec, fp)
+get_params_for_nextflow(simulatr_spec, fp, B_in)
 }
 \arguments{
 \item{simulatr_spec}{the simulatr_specification object}
 
 \item{fp}{a file path}
+
+\item{B_in}{value of B passed to command line; B = 0 indicates no argument passed}
 }
 \description{
 Given a file path fp, writes all parameters to which nextflow needs access to a plain text file stored at fp.

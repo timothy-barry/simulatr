@@ -49,11 +49,21 @@ get_params_for_nextflow <- function(simulatr_spec, fp, B_in) {
   n_param_settings <- nrow(simulatr_spec@parameter_grid)
   # B
   B <- if (B_in == 0) get_param_from_simulatr_spec(simulatr_spec, NULL, "B") else B_in
-  # wall times
-  method_times <- lapply(simulatr_spec@run_method_functions, function(funct_object)
-    ceiling((funct_object@mult_time_factor * B * funct_object@one_rep_time)/n_processors + funct_object@add_time_factor))
-  data_generator <- simulatr_spec@generate_data_function
-  data_generator_time <- ceiling(data_generator@mult_time_factor * B * data_generator@one_rep_time + data_generator@add_time_factor)
+  # wall time calculation function
+  get_wall_time <- function(funct_object, n_processors, B) {
+    one_rep_time <- funct_object@one_rep_time
+    mult_time_factor <- funct_object@mult_time_factor
+    add_time_factor <- funct_object@add_time_factor
+    if (is.na(one_rep_time) | is.na(mult_time_factor) | is.na(add_time_factor)) {
+      out <- 0
+    } else {
+      out <- (mult_time_factor * B * one_rep_time)/n_processors + add_time_factor
+      out <- ceiling(out)
+    }
+    return(out)
+  }
+  method_times <- lapply(simulatr_spec@run_method_functions, get_wall_time, n_processors = n_processors, B = B)
+  data_generator_time <- get_wall_time(simulatr_spec@generate_data_function, 1, B)
   # Put everything into list
   to_write_list <- c(list(method_names = method_names,
                         n_param_settings = n_param_settings,
