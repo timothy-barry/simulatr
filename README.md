@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# `simulatr`: portable and scalable simulations
+# `simulatr`: write portable and scalable simulation code
 
 Simulation studies play a crucial role in the development and assessment
 of statistical methods. However, writing portable and scalable
