@@ -4,14 +4,16 @@
 \alias{summarize_results}
 \title{Summarize results}
 \usage{
-summarize_results(simulatr_specifier, raw_result_df, metrics)
+summarize_results(sim_spec, sim_res, metrics, parameters)
 }
 \arguments{
-\item{simulatr_specifier}{a \code{simulatr_specifier} object}
+\item{sim_spec}{a \code{simulatr_specifier} object}
 
-\item{raw_result_df}{the data frame of raw results, as outputted by \code{simulatr}}
+\item{sim_res}{the data frame of raw results, as outputted by \code{simulatr}}
 
-\item{metrics}{character vector of metrics to compute; options include coverage and bias.}
+\item{metrics}{character vector of metrics to compute; options include "coverage" and "bias."}
+
+\item{parameters}{character vector of parameters on which to compute the metrics}
 }
 \value{
 a data frame of summarized results

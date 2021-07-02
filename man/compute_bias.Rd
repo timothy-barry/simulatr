@@ -4,14 +4,14 @@
 \alias{compute_bias}
 \title{Compute bias}
 \usage{
-compute_bias(tbl, key, simulatr_specifier)
+compute_bias(tbl, key, sim_spec)
 }
 \arguments{
 \item{tbl}{data frame with columns target and value. Target should have entry "estimate."}
 
 \item{key}{data frame with columns for parameter and grid_row_id}
 
-\item{simulatr_specifier}{a simulatr specifier object}
+\item{sim_spec}{a simulatr specifier object}
 }
 \value{
 a 1-row tibble with columns value, lower_mc_ci, and upper_mc_ci

@@ -22,4 +22,6 @@ Imports:
     tidyr
 Suggests: 
     future,
-    future.apply
+    future.apply,
+    cowplot,
+    ggplot2

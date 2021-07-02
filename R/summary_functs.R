@@ -2,9 +2,10 @@
 #'
 #' Summarizes the results of a `simulatr` simulation.
 #'
-#' @param simulatr_specifier a `simulatr_specifier` object
-#' @param raw_result_df the data frame of raw results, as outputted by `simulatr`
-#' @param metrics character vector of metrics to compute; options include coverage and bias.
+#' @param sim_spec a `simulatr_specifier` object
+#' @param sim_res the data frame of raw results, as outputted by `simulatr`
+#' @param metrics character vector of metrics to compute; options include "coverage" and "bias."
+#' @param parameters character vector of parameters on which to compute the metrics
 #'
 #' @return a data frame of summarized results
 #' @export
@@ -19,15 +20,18 @@
 #' parameter %in% c("m_perturbation", "g_perturbation", "pi"))
 #' metrics <- c("bias", "coverage")
 #' }
-summarize_results <- function(simulatr_specifier, raw_result_df, metrics) {
-  raw_result_df$grid_row_id <- as.integer(as.character(raw_result_df$grid_row_id))
+summarize_results <- function(sim_spec, sim_res, metrics, parameters) {
+  sim_res$grid_row_id <- as.integer(as.character(sim_res$grid_row_id))
   funts_to_apply <- purrr::set_names(paste0("compute_", metrics), metrics)
-  summary_stats <- dplyr::group_by(raw_result_df, grid_row_id, parameter, method) %>% dplyr::group_modify(.f = function(tbl, key) {
+  summary_stats <- sim_res %>%
+    dplyr::filter(parameter %in% parameters) %>%
+    dplyr::group_by(grid_row_id, parameter, method) %>%
+    dplyr::group_modify(.f = function(tbl, key) {
     purrr::map_dfr(.x = funts_to_apply,
-                   .f = function(f) do.call(f, args = list(tbl, key, simulatr_specifier)),
+                   .f = function(f) do.call(f, args = list(tbl, key, sim_spec)),
                    .id = "metric")
   }) %>% dplyr::ungroup() %>% dplyr::mutate(grid_row_id = as.integer(grid_row_id))
-  param_grid <- simulatr_specifier@parameter_grid
+  param_grid <- sim_spec@parameter_grid
   if (!("grid_row_id") %in% colnames(param_grid)) {
     param_grid <- tibble::tibble(grid_row_id = seq(1, nrow(param_grid))) %>% dplyr::mutate(param_grid)
   }
@@ -42,12 +46,12 @@ summarize_results <- function(simulatr_specifier, raw_result_df, metrics) {
 #'
 #' @param tbl data frame with columns target and value. Target should have entry "estimate."
 #' @param key data frame with columns for parameter and grid_row_id
-#' @param simulatr_specifier a simulatr specifier object
+#' @param sim_spec a simulatr specifier object
 #'
 #' @return a 1-row tibble with columns value, lower_mc_ci, and upper_mc_ci
-compute_bias <- function(tbl, key, simulatr_specifier) {
+compute_bias <- function(tbl, key, sim_spec) {
   parameter <- as.character(key$parameter); grid_row_id <- key$grid_row_id
-  ground_truth <- get_param_from_simulatr_spec(simulatr_specifier, grid_row_id, parameter)
+  ground_truth <- get_param_from_simulatr_spec(sim_spec, grid_row_id, parameter)
   ests <- dplyr::filter(tbl, target == "estimate") %>% dplyr::pull(value)
   ests <- ests[!is.na(ests)]
   n_sim <- length(ests)
@@ -62,20 +66,52 @@ compute_bias <- function(tbl, key, simulatr_specifier) {
 #'
 #' @param tbl data frame with columns target, value, and id. Column "target" should have entries "confint_lower" and "confint_higher"
 #' @param key data frame with columns for parameter and grid_row_id
-#' @param simulatr_specifier a simulatr specifier object
+#' @param sim_spec a simulatr specifier object
 #'
 #' @return a 1-row tibble with columns value, lower_mc_ci, and upper_mc_ci
-compute_coverage <- function(tbl, key, simulatr_specifier) {
+compute_coverage <- function(tbl, key, sim_spec) {
   parameter <- as.character(key$parameter); grid_row_id <- key$grid_row_id
-  ground_truth <- get_param_from_simulatr_spec(simulatr_specifier, grid_row_id, parameter)
+  ground_truth <- get_param_from_simulatr_spec(sim_spec, grid_row_id, parameter)
   covered <- dplyr::filter(tbl, target %in% c("confint_lower", "confint_higher")) %>%
-    tidyr::pivot_wider(id_cols = "id", names_from = target, values_from = value) %>% stats::na.omit() %>%
-    dplyr::mutate(covered = (confint_lower <= ground_truth && confint_higher >= ground_truth)) %>%
+    dplyr::group_by(id) %>%
+    dplyr::summarize(covered = (value[target == "confint_lower"] < ground_truth
+                                & value[target == "confint_higher"] > ground_truth)) %>%
     dplyr::pull(covered)
-  coverage <- mean(covered)
+  covered <- covered[!is.na(covered)]
   n_sim <- length(covered)
+  coverage <- mean(covered)
   mc_se <- sqrt((coverage * (1 - coverage))/n_sim)
   dplyr::tibble(value = coverage, lower_mc_ci = coverage - 1.96 * mc_se, upper_mc_ci = coverage + 1.96 * mc_se)
 }
 
 
+#' Plot all arms
+#'
+#' Plots all arms of a simulation study for a given parameter and metric.
+#'
+#' @param summarized_results a data frame outputted by `summarize_results.`
+#' @param parameter name of the target parameter
+#' @param metric name of the metric used to quantify inference on the target parameter
+#'
+#' @return a plot
+#' @export
+plot_all_arms <- function(summarized_results, parameter, metric) {
+  arms <- grep(pattern = "^arm_", x = colnames(summarized_results), value = TRUE) %>% gsub(pattern = "^arm_", replacement = "", x = .)
+  summarized_results_sub <- dplyr::filter(summarized_results, parameter == !!parameter)
+  ps <- lapply(arms, function(arm) {
+    arm_name <- paste0("arm_", arm)
+    other_arms <- arms[ !(arms == arm) ]
+    title <- sapply(other_arms, function(other_arm) paste0(other_arm, " = ", summarized_results_sub[[other_arm]][1]))
+    title <- paste0(paste0(title, collapse = ", "))
+    to_plot <- dplyr::filter(summarized_results_sub, !!as.symbol(arm_name) & metric == !!metric)
+    p <- ggplot2::ggplot(to_plot, ggplot2::aes(x = !!as.symbol(arm), y = value, col = method)) + ggplot2::geom_point() + ggplot2::geom_line() + ggplot2::ylab(metric) + ggplot2::geom_errorbar(ggplot2::aes(ymin = lower_mc_ci, ymax = upper_mc_ci, width = 0.03)) + ggplot2::theme_bw() + ggplot2::theme(plot.title = ggplot2::element_text(size = 11, hjust = 0.5)) + ggplot2::ggtitle(title)
+    l <- cowplot::get_legend(p + ggplot2::theme(legend.position = "bottom"))
+    p_out <- p + ggplot2::theme(legend.position = "none")
+    return(list(plot = p_out, legend = l))
+  })
+  n_ps <- length(ps)
+  vert_plot <- cowplot::plot_grid(plotlist = lapply(ps, function(i) i$plot),
+                         align = "v", axis = "l", nrow = n_ps, labels = letters[1:n_ps])
+  out <- cowplot::plot_grid(vert_plot, ps[[1]]$legend, ncol = 1, rel_heights = c(1, .1))
+  return(out)
+}
