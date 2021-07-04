@@ -25,7 +25,6 @@ check_simulatr_specifier_object <- function(simulatr_spec, B_in = NULL, parallel
   } else {
     my_lapply <- lapply
   }
-  # check: system.time(my_lapply(seq(1,3), function(i) Sys.sleep(1)))
 
   # set basic quantities
   n_param_settings <- nrow(simulatr_spec@parameter_grid)
@@ -101,11 +100,13 @@ check_simulatr_specifier_object <- function(simulatr_spec, B_in = NULL, parallel
         B <- length(data_list)
         # run method, while clocking time and looking for errors
         time <- suppressMessages(system.time(if (method_object@loop) {
-          result_list <- lapply(seq(1, length(data_list)), function(i) {
+          result_list <- vector(mode = "list", length = length(data_list))
+          for (i in seq(1, length(data_list))) {
             ordered_args[[1]] <- data_list[[i]]
             out <- do.call(method_object@f, ordered_args)
             out$run_id <- i
-          })
+            result_list[[i]] <- out
+          }
           result_df <- do.call(rbind, result_list)
         } else {
           ordered_args[[1]] <- data_list
