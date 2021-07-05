@@ -32,3 +32,30 @@ setup_script <- function(simulatr_spec, B_in, function_object, row_idx) {
     }
   return(list(simulatr_spec = simulatr_spec, ordered_args = ordered_args))
 }
+
+
+#' Collate result list
+#'
+#' @param result_list a list of data frames (each corresponding to a different run ID)
+#' @param proc_id the processor id
+#' @param row_idx the row of the parameter grid
+#' @param method string giving the method
+#'
+#' @return a collated data frame
+#' @export
+collate_result_list <- function(result_df, proc_id, row_idx, method) {
+  colnames_result_df <- colnames(result_df)
+  convert_to_factor <- c(c("run_id", "proc_id", "grid_row_id", "method", "id"),
+                         if ("parameter" %in% colnames_result_df) "parameter" else NULL,
+                         if ("target" %in% colnames_result_df) "target" else NULL)
+
+  out <- result_df %>% dplyr::mutate(proc_id = proc_id,
+                              grid_row_id = row_idx,
+                              method = method,
+                              id = paste0(method, "-",
+                                          row_idx, "-",
+                                          proc_id, "-",
+                                          as.character(run_id))) %>%
+    dplyr::mutate_at(convert_to_factor, factor)
+  return(out)
+}
