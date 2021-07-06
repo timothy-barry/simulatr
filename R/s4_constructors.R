@@ -17,7 +17,7 @@ simulatr_function <- function(f,
                               packages = NA_character_,
                               loop = FALSE,
                               one_rep_time = NA_real_,
-                              mult_time_factor = 15,
+                              mult_time_factor = 10,
                               add_time_factor = 60
                               ) {
   new(Class = "simulatr_function",
