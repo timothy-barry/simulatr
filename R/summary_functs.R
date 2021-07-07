@@ -4,22 +4,11 @@
 #'
 #' @param sim_spec a `simulatr_specifier` object
 #' @param sim_res the data frame of raw results, as outputted by `simulatr`
-#' @param metrics character vector of metrics to compute; options include "coverage," "bias," and "rejection_probability"
+#' @param metrics character vector of metrics to compute; options include "coverage," "bias," "rejection_probability," and "count."
 #' @param parameters character vector of parameters on which to compute the metrics
 #' @param threshold (optional; default value 0.05) the rejection threshold to use for "rejection_probability" metric.
 #' @return a data frame of summarized results
 #' @export
-#'
-#' @examples
-#' \dontrun{
-#' simulatr_specifier <-
-#' readRDS("/Users/timbarry/research_offsite/glmeiv/private/simulations/sim_spec_1.rds")
-#' raw_result_df <-
-#' readRDS("/Users/timbarry/research_offsite/glmeiv/private/simulations/result.rds")
-#' raw_result_df <- dplyr::filter(raw_result_df,
-#' parameter %in% c("m_perturbation", "g_perturbation", "pi"))
-#' metrics <- c("bias", "coverage")
-#' }
 summarize_results <- function(sim_spec, sim_res, metrics, parameters, threshold = 0.05) {
   sim_res$grid_row_id <- as.integer(as.character(sim_res$grid_row_id))
   # get the functions to apply
@@ -27,7 +16,8 @@ summarize_results <- function(sim_spec, sim_res, metrics, parameters, threshold 
   # the named list of arguments to pass to each function
   arg_names_list <- list(compute_bias = c("tbl", "key", "sim_spec"),
                      compute_coverage = c("tbl", "key", "sim_spec"),
-                     compute_rejection_probability = c("tbl", "threshold"))
+                     compute_rejection_probability = c("tbl", "threshold"),
+                     compute_count = "tbl")
   # initialize bag_of_vars
   bag_of_vars <- new.env()
   bag_of_vars$threshold <- threshold; bag_of_vars$sim_spec <- sim_spec
@@ -46,6 +36,16 @@ summarize_results <- function(sim_spec, sim_res, metrics, parameters, threshold 
                      },
                      .id = "metric")
   }) %>% dplyr::ungroup() %>% dplyr::mutate(grid_row_id = as.integer(grid_row_id))
+
+  # add count of zero back in
+  if ("count" %in% metrics) {
+    methods <- names(sim_spec@run_method_functions)
+    missing <- summary_stats %>% filter(metric == "count") %>% group_by(grid_row_id, parameter) %>%
+      summarize(method = methods[!(methods %in% method)]) %>%
+      mutate(metric = "count", value = 0, lower_mc_ci = NA, upper_mc_ci = NA)
+    summary_stats <- rbind(summary_stats, missing)
+  }
+  # combine with param grid
   param_grid <- sim_spec@parameter_grid
   if (!("grid_row_id") %in% colnames(param_grid)) {
     param_grid <- tibble::tibble(grid_row_id = seq(1, nrow(param_grid))) %>% dplyr::mutate(param_grid)
@@ -118,6 +118,12 @@ compute_rejection_probability <- function(tbl, threshold) {
 }
 
 
+compute_count <- function(tbl) {
+  count <- tbl$id %>% as.character() %>% unique() %>% length()
+  dplyr::tibble(value = count, lower_mc_ci = NA, upper_mc_ci = NA)
+}
+
+
 #' Plot all arms
 #'
 #' Plots all arms of a simulation study for a given parameter and metric.
@@ -128,7 +134,7 @@ compute_rejection_probability <- function(tbl, threshold) {
 #'
 #' @return a plot
 #' @export
-plot_all_arms <- function(summarized_results, parameter, metric) {
+plot_all_arms <- function(summarized_results, parameter, metric, ylim = NULL) {
   arms <- grep(pattern = "^arm_", x = colnames(summarized_results), value = TRUE) %>% gsub(pattern = "^arm_", replacement = "", x = .)
   summarized_results_sub <- dplyr::filter(summarized_results, parameter == !!parameter)
   ps <- lapply(arms, function(arm) {
@@ -137,7 +143,7 @@ plot_all_arms <- function(summarized_results, parameter, metric) {
     title <- sapply(other_arms, function(other_arm) paste0(other_arm, " = ", summarized_results_sub[[other_arm]][1]))
     title <- paste0(paste0(title, collapse = ", "))
     to_plot <- dplyr::filter(summarized_results_sub, !!as.symbol(arm_name) & metric == !!metric)
-    p <- ggplot2::ggplot(to_plot, ggplot2::aes(x = !!as.symbol(arm), y = value, col = method)) + ggplot2::geom_point() + ggplot2::geom_line() + ggplot2::ylab(metric) + ggplot2::geom_errorbar(ggplot2::aes(ymin = lower_mc_ci, ymax = upper_mc_ci), width = 0) + ggplot2::theme_bw() + ggplot2::theme(plot.title = ggplot2::element_text(size = 11, hjust = 0.5)) + ggplot2::ggtitle(title)
+    p <- ggplot2::ggplot(to_plot, ggplot2::aes(x = !!as.symbol(arm), y = value, col = method)) + ggplot2::geom_point() + ggplot2::geom_line() + ggplot2::ylab(metric) + ggplot2::geom_errorbar(ggplot2::aes(ymin = lower_mc_ci, ymax = upper_mc_ci), width = 0) + ggplot2::theme_bw() + ggplot2::theme(plot.title = ggplot2::element_text(size = 11, hjust = 0.5)) + ggplot2::ggtitle(title) + if (is.null(ylim)) NULL else ggplot2::ylim(ylim)
     l <- cowplot::get_legend(p + ggplot2::theme(legend.position = "bottom"))
     p_out <- p + ggplot2::theme(legend.position = "none")
     return(list(plot = p_out, legend = l))
