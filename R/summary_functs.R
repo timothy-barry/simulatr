@@ -4,7 +4,7 @@
 #'
 #' @param sim_spec a `simulatr_specifier` object
 #' @param sim_res the data frame of raw results, as outputted by `simulatr`
-#' @param metrics character vector of metrics to compute; options include "coverage," "bias," "rejection_probability," and "count."
+#' @param metrics character vector of metrics to compute; options include "coverage," "bias," "se" (standard deviation of estimator), "mse", "rejection_probability," and "count."
 #' @param parameters character vector of parameters on which to compute the metrics
 #' @param threshold (optional; default value 0.05) the rejection threshold to use for "rejection_probability" metric.
 #' @return a data frame of summarized results
@@ -17,7 +17,9 @@ summarize_results <- function(sim_spec, sim_res, metrics, parameters, threshold 
   arg_names_list <- list(compute_bias = c("tbl", "key", "sim_spec"),
                      compute_coverage = c("tbl", "key", "sim_spec"),
                      compute_rejection_probability = c("tbl", "threshold"),
-                     compute_count = "tbl")
+                     compute_count = "tbl",
+                     compute_mse = c("tbl", "key", "sim_spec"),
+                     compute_se = "tbl")
   # initialize bag_of_vars
   bag_of_vars <- new.env()
   bag_of_vars$threshold <- threshold; bag_of_vars$sim_spec <- sim_spec
@@ -37,20 +39,26 @@ summarize_results <- function(sim_spec, sim_res, metrics, parameters, threshold 
                      .id = "metric")
   }) %>% dplyr::ungroup() %>% dplyr::mutate(grid_row_id = as.integer(grid_row_id))
 
-  # add count of zero back in
-  if ("count" %in% metrics) {
-    methods <- names(sim_spec@run_method_functions)
-    missing <- summary_stats %>% filter(metric == "count") %>% group_by(grid_row_id, parameter) %>%
-      summarize(method = methods[!(methods %in% method)]) %>%
-      mutate(metric = "count", value = 0, lower_mc_ci = NA, upper_mc_ci = NA)
-    summary_stats <- rbind(summary_stats, missing)
-  }
   # combine with param grid
   param_grid <- sim_spec@parameter_grid
   if (!("grid_row_id") %in% colnames(param_grid)) {
     param_grid <- tibble::tibble(grid_row_id = seq(1, nrow(param_grid))) %>% dplyr::mutate(param_grid)
   }
   out <- dplyr::inner_join(x = param_grid, y = summary_stats, by = "grid_row_id")
+
+  # add 0 counts back in if necessary
+  if ("count" %in% metrics) {
+    null_count_df <- expand.grid(parameter = parameters,
+                                 method = names(sim_spec@run_method_functions),
+                                 grid_row_id = seq(1, nrow(param_grid)),
+                                 metric = "count",
+                                 null_value = 0) %>%
+      dplyr::left_join(x = ., y = param_grid, by = "grid_row_id")
+    out <- dplyr::full_join(null_count_df, out) %>%
+      dplyr::mutate(value = ifelse(is.na(value), null_value, value)) %>%
+      dplyr::select(-null_value)
+  }
+  out <- tibble::as_tibble(x = out)
   return(out)
 }
 
@@ -76,6 +84,41 @@ compute_bias <- function(tbl, key, sim_spec) {
   dplyr::tibble(value = sample_bias, lower_mc_ci = sample_bias - 1.96 * mc_se, upper_mc_ci = sample_bias + 1.96 * mc_se)
 }
 
+
+#' Compute mean squared error
+#'
+#' Computes the MSE of an estimator.
+#'
+#' @param tbl similar to bias
+#' @param key similar to bias
+#' @param sim_spec similar to bias
+#'
+#' @return similar to bias
+compute_mse <- function(tbl, key, sim_spec) {
+  parameter <- as.character(key$parameter); grid_row_id <- key$grid_row_id
+  ground_truth <- get_param_from_simulatr_spec(sim_spec, grid_row_id, parameter)
+  ests <- dplyr::filter(tbl, target == "estimate") %>% dplyr::pull(value)
+  ests <- ests[!is.na(ests)]
+  n_sim <- length(ests)
+  mse <- (1/n_sim) * sum((ests - ground_truth)^2)
+  mc_se <- sqrt(sum(((ests - ground_truth)^2 - mse)^2)/(n_sim * (n_sim - 1)))
+  dplyr::tibble(value = mse, lower_mc_ci = mse - 1.96 * mc_se, upper_mc_ci = mse + 1.96 * mc_se)
+}
+
+
+#' Compute se
+#'
+#' @param tbl similar to bias
+#'
+#' @return similar to bias
+compute_se <- function(tbl) {
+  ests <- dplyr::filter(tbl, target == "estimate") %>% dplyr::pull(value)
+  ests <- ests[!is.na(ests)]
+  n_sim <- length(ests)
+  se <- sd(ests)
+  mc_se <- se/sqrt(2 * (n_sim - 1))
+  dplyr::tibble(value = se, lower_mc_ci = se - 1.96 * mc_se, upper_mc_ci = se + 1.96 * mc_se)
+}
 
 #' Compute coverage
 #'
@@ -121,36 +164,4 @@ compute_rejection_probability <- function(tbl, threshold) {
 compute_count <- function(tbl) {
   count <- tbl$id %>% as.character() %>% unique() %>% length()
   dplyr::tibble(value = count, lower_mc_ci = NA, upper_mc_ci = NA)
-}
-
-
-#' Plot all arms
-#'
-#' Plots all arms of a simulation study for a given parameter and metric.
-#'
-#' @param summarized_results a data frame outputted by `summarize_results.`
-#' @param parameter name of the target parameter
-#' @param metric name of the metric used to quantify inference on the target parameter
-#'
-#' @return a plot
-#' @export
-plot_all_arms <- function(summarized_results, parameter, metric, ylim = NULL) {
-  arms <- grep(pattern = "^arm_", x = colnames(summarized_results), value = TRUE) %>% gsub(pattern = "^arm_", replacement = "", x = .)
-  summarized_results_sub <- dplyr::filter(summarized_results, parameter == !!parameter)
-  ps <- lapply(arms, function(arm) {
-    arm_name <- paste0("arm_", arm)
-    other_arms <- arms[ !(arms == arm) ]
-    title <- sapply(other_arms, function(other_arm) paste0(other_arm, " = ", summarized_results_sub[[other_arm]][1]))
-    title <- paste0(paste0(title, collapse = ", "))
-    to_plot <- dplyr::filter(summarized_results_sub, !!as.symbol(arm_name) & metric == !!metric)
-    p <- ggplot2::ggplot(to_plot, ggplot2::aes(x = !!as.symbol(arm), y = value, col = method)) + ggplot2::geom_point() + ggplot2::geom_line() + ggplot2::ylab(metric) + ggplot2::geom_errorbar(ggplot2::aes(ymin = lower_mc_ci, ymax = upper_mc_ci), width = 0) + ggplot2::theme_bw() + ggplot2::theme(plot.title = ggplot2::element_text(size = 11, hjust = 0.5)) + ggplot2::ggtitle(title) + if (is.null(ylim)) NULL else ggplot2::ylim(ylim)
-    l <- cowplot::get_legend(p + ggplot2::theme(legend.position = "bottom"))
-    p_out <- p + ggplot2::theme(legend.position = "none")
-    return(list(plot = p_out, legend = l))
-  })
-  n_ps <- length(ps)
-  vert_plot <- cowplot::plot_grid(plotlist = lapply(ps, function(i) i$plot),
-                         align = "v", axis = "l", nrow = n_ps, labels = letters[1:n_ps])
-  out <- cowplot::plot_grid(vert_plot, ps[[1]]$legend, ncol = 1, rel_heights = c(1, .1))
-  return(out)
 }
