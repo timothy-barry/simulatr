@@ -7,13 +7,13 @@
 collate_result_list(result_df, proc_id, row_idx, method)
 }
 \arguments{
+\item{result_df}{data frame outputted by method function}
+
 \item{proc_id}{the processor id}
 
 \item{row_idx}{the row of the parameter grid}
 
 \item{method}{string giving the method}
-
-\item{result_list}{a list of data frames (each corresponding to a different run ID)}
 }
 \value{
 a collated data frame

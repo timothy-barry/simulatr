@@ -10,7 +10,7 @@ simulatr_function(
   packages = NA_character_,
   loop = FALSE,
   one_rep_time = NA_real_,
-  mult_time_factor = 5,
+  mult_time_factor = 2,
   add_time_factor = 60
 )
 }

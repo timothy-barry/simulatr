@@ -115,7 +115,7 @@ compute_se <- function(tbl) {
   ests <- dplyr::filter(tbl, target == "estimate") %>% dplyr::pull(value)
   ests <- ests[!is.na(ests)]
   n_sim <- length(ests)
-  se <- sd(ests)
+  se <- stats::sd(ests)
   mc_se <- se/sqrt(2 * (n_sim - 1))
   dplyr::tibble(value = se, lower_mc_ci = se - 1.96 * mc_se, upper_mc_ci = se + 1.96 * mc_se)
 }

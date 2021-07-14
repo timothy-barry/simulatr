@@ -36,7 +36,7 @@ setup_script <- function(simulatr_spec, B_in, function_object, row_idx) {
 
 #' Collate result list
 #'
-#' @param result_list a list of data frames (each corresponding to a different run ID)
+#' @param result_df data frame outputted by method function
 #' @param proc_id the processor id
 #' @param row_idx the row of the parameter grid
 #' @param method string giving the method
