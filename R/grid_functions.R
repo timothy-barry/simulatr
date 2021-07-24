@@ -32,7 +32,9 @@ create_param_grid_fractional_factorial <- function(varying_values, baseline_valu
   })
   grid_df <- do.call(rbind, df_pieces)
   idx_to_keep <- !duplicated(dplyr::select(grid_df, var_names))
-  grid_df[idx_to_keep,]
+  out <- grid_df[idx_to_keep,]
+  out$grid_id <- seq(1, nrow(out))
+  return(out)
 }
 
 
