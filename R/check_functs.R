@@ -92,6 +92,7 @@ check_simulatr_specifier_object <- function(simulatr_spec, B_in = NULL, parallel
         seed <- get_param_from_simulatr_spec(simulatr_spec, row_idx, "seed")
         set.seed(seed)
         # obtain arguments
+        ordered_args <- NULL
         ordered_args <- c(list(NA), lapply(method_object@arg_names, function(curr_arg) {
           get_param_from_simulatr_spec(simulatr_spec, row_idx, curr_arg)}))
         # get the current data list
@@ -112,6 +113,7 @@ check_simulatr_specifier_object <- function(simulatr_spec, B_in = NULL, parallel
           ordered_args[[1]] <- data_list
           result_df <- do.call(method_object@f, ordered_args)
         })[["elapsed"]]/B)
+        result_df$grid_id <- row_idx
         return(list(error = FALSE, warning = FALSE, time = time, result_df = result_df))
       }, error = function(e) {
         return(list(error = TRUE, warning = FALSE, ordered_args = ordered_args, msg = e))
@@ -123,7 +125,7 @@ check_simulatr_specifier_object <- function(simulatr_spec, B_in = NULL, parallel
     if (query_funct$stop_funct) return(query_funct$ret_val)
     # no errors; get the times and result_dfs
     method_times[[method_name]] <- sapply(method_out, function(i) i$time)
-    result_lists[[method_name]] <- lapply(method_out, function(i) i$result_df)
+    result_lists[[method_name]] <- do.call(what = rbind, args = lapply(method_out, function(i) i$result_df))
   }
   n_warnings <- c(data_generation_times, unlist(method_times)) %>% is.na() %>% sum()
   if (n_warnings == 0) {
