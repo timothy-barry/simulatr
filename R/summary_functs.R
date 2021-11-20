@@ -4,7 +4,7 @@
 #'
 #' @param sim_spec a `simulatr_specifier` object
 #' @param sim_res the data frame of raw results, as outputted by `simulatr`
-#' @param metrics character vector of metrics to compute; options include "coverage," "bias," "se" (standard deviation of estimator), "mse", "rejection_probability," and "count."
+#' @param metrics character vector of metrics to compute; options include "coverage," "bias," "se" (standard deviation of estimator), "mse", "rejection_probability," "count," and "time."
 #' @param parameters character vector of parameters on which to compute the metrics
 #' @param threshold (optional; default value 0.05) the rejection threshold to use for "rejection_probability" metric.
 #' @return a data frame of summarized results
@@ -13,13 +13,15 @@ summarize_results <- function(sim_spec, sim_res, metrics, parameters, threshold 
   sim_res$grid_row_id <- as.integer(as.character(sim_res$grid_row_id))
   # get the functions to apply
   funts_to_apply <- purrr::set_names(paste0("compute_", metrics), metrics)
+  funts_to_apply <- funts_to_apply[funts_to_apply != "compute_time"]
+
   # the named list of arguments to pass to each function
   arg_names_list <- list(compute_bias = c("tbl", "key", "sim_spec"),
-                     compute_coverage = c("tbl", "key", "sim_spec"),
-                     compute_rejection_probability = c("tbl", "threshold"),
-                     compute_count = "tbl",
-                     compute_mse = c("tbl", "key", "sim_spec"),
-                     compute_se = "tbl")
+                         compute_coverage = c("tbl", "key", "sim_spec"),
+                         compute_rejection_probability = c("tbl", "threshold"),
+                         compute_count = "tbl",
+                         compute_mse = c("tbl", "key", "sim_spec"),
+                         compute_se = "tbl")
   # initialize bag_of_vars
   bag_of_vars <- new.env()
   bag_of_vars$threshold <- threshold; bag_of_vars$sim_spec <- sim_spec
@@ -37,7 +39,22 @@ summarize_results <- function(sim_spec, sim_res, metrics, parameters, threshold 
                        do.call(what = f_name, args = curr_args)
                      },
                      .id = "metric")
-  }) %>% dplyr::ungroup() %>% dplyr::mutate(grid_row_id = as.integer(grid_row_id))
+    }) %>% dplyr::ungroup() %>% dplyr::mutate(grid_row_id = as.integer(grid_row_id))
+
+  # compute time, if requested (not associated with any specific parameter)
+  if ("time" %in% metrics) {
+    time_df <- sim_res %>% dplyr::group_by(grid_row_id, method) %>%
+      dplyr::group_modify(.f = function(tbl, key) {
+        times <- dplyr::filter(tbl, target == "time") %>% dplyr::pull(value)
+        se <- sd(times)
+        m <- mean(times)
+        n_sim <- length(times)
+        lower_mc_ci <- m - 1.96 * se / sqrt(n_sim)
+        upper_mc_ci <- m + 1.96 * se / sqrt(n_sim)
+        dplyr::tibble(value =  m, lower_mc_ci = lower_mc_ci, upper_mc_ci = upper_mc_ci)
+      }) %>% dplyr::mutate(parameter = "meta", metric = "time")
+    summary_stats <- rbind(time_df, summary_stats)
+  }
 
   # combine with param grid
   param_grid <- sim_spec@parameter_grid
@@ -130,10 +147,10 @@ compute_se <- function(tbl) {
 compute_coverage <- function(tbl, key, sim_spec) {
   parameter <- as.character(key$parameter); grid_row_id <- key$grid_row_id
   ground_truth <- get_param_from_simulatr_spec(sim_spec, grid_row_id, parameter)
-  covered <- dplyr::filter(tbl, target %in% c("confint_lower", "confint_higher")) %>%
+  covered <- dplyr::filter(tbl, target %in% c("confint_lower", "confint_upper")) %>%
     dplyr::group_by(id) %>%
     dplyr::summarize(covered = (value[target == "confint_lower"] < ground_truth
-                                & value[target == "confint_higher"] > ground_truth)) %>%
+                                & value[target == "confint_upper"] > ground_truth)) %>%
     dplyr::pull(covered)
   covered <- covered[!is.na(covered)]
   n_sim <- length(covered)
@@ -165,3 +182,6 @@ compute_count <- function(tbl) {
   count <- tbl$id %>% as.character() %>% unique() %>% length()
   dplyr::tibble(value = count, lower_mc_ci = NA, upper_mc_ci = NA)
 }
+
+
+
