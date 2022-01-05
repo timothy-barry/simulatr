@@ -21,7 +21,8 @@ summarize_results <- function(sim_spec, sim_res, metrics, parameters, threshold 
                          compute_rejection_probability = c("tbl", "threshold"),
                          compute_count = "tbl",
                          compute_mse = c("tbl", "key", "sim_spec"),
-                         compute_se = "tbl")
+                         compute_se = "tbl",
+                         compute_ci_width = "tbl")
   # initialize bag_of_vars
   bag_of_vars <- new.env()
   bag_of_vars$threshold <- threshold; bag_of_vars$sim_spec <- sim_spec
@@ -160,6 +161,14 @@ compute_coverage <- function(tbl, key, sim_spec) {
 }
 
 
+compute_ci_width <- function(tbl) {
+  widths <- dplyr::filter(tbl, target %in% c("confint_lower", "confint_upper")) %>%
+    dplyr::select(target, value, id) %>%
+    tidyr::pivot_wider(id_cols = c("id"), names_from = "target", values_from = "value") %>%
+    dplyr::summarize(confint_upper - confint_lower) %>% dplyr::pull()
+  dplyr::tibble(value = mean(widths), lower_mc_ci = NA, upper_mc_ci = NA)
+}
+
 #' Computes rejection probability
 #'
 #' Rejection probability is type-I error (under null) and type-II error (under alternative)
@@ -182,6 +191,3 @@ compute_count <- function(tbl) {
   count <- tbl$id %>% as.character() %>% unique() %>% length()
   dplyr::tibble(value = count, lower_mc_ci = NA, upper_mc_ci = NA)
 }
-
-
-
