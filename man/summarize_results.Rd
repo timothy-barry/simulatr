@@ -11,7 +11,7 @@ summarize_results(sim_spec, sim_res, metrics, parameters, threshold = 0.05)
 
 \item{sim_res}{the data frame of raw results, as outputted by \code{simulatr}}
 
-\item{metrics}{character vector of metrics to compute; options include "coverage," "bias," "se" (standard deviation of estimator), "mse", "rejection_probability," and "count."}
+\item{metrics}{character vector of metrics to compute; options include "coverage," "bias," "se" (standard deviation of estimator), "mse", "rejection_probability," "count," and "time."}
 
 \item{parameters}{character vector of parameters on which to compute the metrics}
 

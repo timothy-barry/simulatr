@@ -1,4 +1,4 @@
-utils::globalVariables(c("target", "value", "confint_lower", "confint_higher", "grid_row_id", "parameter", "method", ".", "lower_mc_ci", "upper_mc_ci", "run_id", "id", "null_value"))
+utils::globalVariables(c("target", "value", "confint_lower", "confint_upper", "grid_row_id", "parameter", "method", ".", "lower_mc_ci", "upper_mc_ci", "run_id", "id", "null_value", "sd"))
 
 #' simulatr: A package that powers portable and scalable simulation studies
 #'

@@ -47,7 +47,7 @@ summarize_results <- function(sim_spec, sim_res, metrics, parameters, threshold 
     time_df <- sim_res %>% dplyr::group_by(grid_row_id, method) %>%
       dplyr::group_modify(.f = function(tbl, key) {
         times <- dplyr::filter(tbl, target == "time") %>% dplyr::pull(value)
-        se <- sd(times)
+        se <- stats::sd(times)
         m <- mean(times)
         n_sim <- length(times)
         lower_mc_ci <- m - 1.96 * se / sqrt(n_sim)
@@ -168,6 +168,7 @@ compute_ci_width <- function(tbl) {
     dplyr::summarize(confint_upper - confint_lower) %>% dplyr::pull()
   dplyr::tibble(value = mean(widths), lower_mc_ci = NA, upper_mc_ci = NA)
 }
+
 
 #' Computes rejection probability
 #'

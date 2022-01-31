@@ -125,7 +125,8 @@ check_simulatr_specifier_object <- function(simulatr_spec, B_in = NULL, parallel
     if (query_funct$stop_funct) return(query_funct$ret_val)
     # no errors; get the times and result_dfs
     method_times[[method_name]] <- sapply(method_out, function(i) i$time)
-    result_lists[[method_name]] <- do.call(what = rbind, args = lapply(method_out, function(i) i$result_df))
+    result_lists[[method_name]] <- do.call(what = rbind, args = lapply(method_out, function(i) i$result_df)) %>%
+      dplyr::mutate(method = method_name)
   }
   n_warnings <- c(data_generation_times, unlist(method_times)) %>% is.na() %>% sum()
   if (n_warnings == 0) {
@@ -133,7 +134,8 @@ check_simulatr_specifier_object <- function(simulatr_spec, B_in = NULL, parallel
   } else {
     cat(paste0("\nSUMMARY: There are ", n_warnings, " warnings (see above). Otherwise, simulatr specifier object is specified correctly.\n"))
   }
-  return(list(data = data_lists, results = result_lists, data_generation_times = data_generation_times, method_times = method_times))
+  result <- do.call(what = rbind, args = result_lists)
+  return(list(data = data_lists, results = result, data_generation_times = data_generation_times, method_times = method_times))
 }
 
 
