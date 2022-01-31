@@ -1,4 +1,4 @@
-load_all()
+library(simulatr)
 
 set.seed(10)
 # 1. Create the parameter grid of varying parameters
