@@ -54,18 +54,18 @@ check_simulatr_specifier_object <- function(simulatr_spec, B_in = NULL, parallel
     B <- get_param_from_simulatr_spec(simulatr_spec, row_idx, "B")
     # generate the data, while clocking the time and looking for errors
     tryCatch({
-      time <- system.time(
+      time <- suppressMessages(system.time(
         if (data_generator@loop) {
           data_list <- replicate(B, do.call(data_generator@f, ordered_args), FALSE)
         } else {
           data_list <- do.call(data_generator@f, ordered_args)
-        })[["elapsed"]]/B
+        })[["elapsed"]]/B)
       return(list(error = FALSE, warning = FALSE, time = time, data_list = data_list))
       # handle errors and warnings
     }, error = function(e) {
       return(list(error = TRUE, warning = FALSE, ordered_args = ordered_args, msg = e))
     }, warning = function(w) {
-      return(list(error = FALSE, warning = TRUE, time = NA, data_list = data_list, msg = w))
+      return(list(error = FALSE, warning = TRUE, ordered_args = ordered_args, msg = w))
     })
   })
   query_funct <- check_funct_helper(data_generation_out, "data generator")
@@ -118,7 +118,7 @@ check_simulatr_specifier_object <- function(simulatr_spec, B_in = NULL, parallel
       }, error = function(e) {
         return(list(error = TRUE, warning = FALSE, ordered_args = ordered_args, msg = e))
       }, warning = function(w) {
-        return(list(error = FALSE, warning = TRUE, time = NA, result_df = NA, msg = w))
+        return(list(error = FALSE, warning = TRUE, ordered_args = ordered_args, msg = w))
       })
     })
     query_funct <- check_funct_helper(method_out, method_name)
@@ -157,17 +157,20 @@ check_funct_helper <- function(out_list, funct_name) {
   }
   # define default output
   ret <- list(stop_funct = FALSE)
-  # check errors
-  if (any(errors)) {
-    f(errors, funct_name, "error")
-    cat(paste0("Aborting function and returning list of arguments corresponding to rows that produced errors for function \`", funct_name, "\`.\n"))
-    ret_val <- lapply(out_list[errors], function(i) i$ordered_args)
+  # check errors OR warnings
+  if (any(errors) | any(warnings)) {
+    if (any(errors)) {
+      f(errors, funct_name, "error")
+      msg_type <- "error"
+      ret_val <- lapply(out_list[errors], function(i) i$ordered_args)
+    } else {
+      f(warnings, funct_name, "warning")
+      msg_type <- "warning"
+      ret_val <- lapply(out_list[warnings], function(i) i$ordered_args)
+    }
+    cat(paste0("Aborting and returning list of arguments corresponding to rows that produced ", msg_type,"s for function \`", funct_name, "\`.\n"))
     if (length(ret_val) == 1) ret_val <- ret_val[[1]]
     ret <- list(stop_funct = TRUE, ret_val = ret_val)
-  }
-  # check warnings
-  if (any(warnings)) {
-    f(warnings, funct_name, "warning")
   }
   return(ret)
 }

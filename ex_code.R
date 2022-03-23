@@ -50,12 +50,13 @@ lasso_f <- function(y, design_matrix) {
   library(magrittr)
   fit_lasso <- glmnet::cv.glmnet(x = design_matrix, y = y)
   beta_hat <- glmnet::coef.glmnet(object = fit_lasso, "lambda.min")[,1] %>% setNames(., NULL)
+  warning("test warn")
   data.frame(parameter = c("intercept", "beta_1", "beta_2", "beta_3", "beta_4"),
              target = "estimate", value = beta_hat)
 }
 lasso_spec_f <- simulatr_function(f = lasso_f, arg_names = formalArgs(lasso_f)[-1], loop = TRUE)
 method_list <- list(ols = ols_spec_f, lasso = lasso_spec_f)
 
-sim_spec <- simulatr_specifier(parameter_grid = p_grid, fixed_parameters = fixed_params,
+simulatr_spec <- simulatr_specifier(parameter_grid = p_grid, fixed_parameters = fixed_params,
                    generate_data_function = generate_data_spec_f, run_method_functions = method_list)
-check <- check_simulatr_specifier_object(simulatr_spec = sim_spec, B_in = 3, parallel = TRUE)
+check <- check_simulatr_specifier_object(simulatr_spec = simulatr_spec, B_in = 3, parallel = TRUE)
