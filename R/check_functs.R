@@ -92,9 +92,12 @@ check_simulatr_specifier_object <- function(simulatr_spec, B_in = NULL, parallel
         seed <- get_param_from_simulatr_spec(simulatr_spec, row_idx, "seed")
         set.seed(seed)
         # obtain arguments
-        ordered_args <- NULL
-        ordered_args <- c(list(NA), lapply(method_object@arg_names, function(curr_arg) {
-          get_param_from_simulatr_spec(simulatr_spec, row_idx, curr_arg)}))
+        if (identical(method_object@arg_names, NA_character_)) {
+          ordered_args <- list(NA)
+        } else {
+          ordered_args <- c(list(NA), lapply(method_object@arg_names, function(curr_arg) {
+            get_param_from_simulatr_spec(simulatr_spec, row_idx, curr_arg)}))
+        }
         # get the current data list
         data_list <- data_lists[[row_idx]]
         # get B
