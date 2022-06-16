@@ -1,13 +1,16 @@
 #' Setup script
 #'
-#' Runs setup for either the generate_data.R script or run_methods.R script.
+#' Runs setup for either the generate_data.R script or run_methods.R script. This script
+#'  i) sets the seed (which has a global side-effect)
+#'  ii) updates the value of B, if B !=0 (the default)
+#'  iii) obtains the ordered set of arguments
 #'
 #' @param simulatr_spec simulation specifier object
 #' @param B_in B to set (0 means do not update)
 #' @param function_object either a method or data generation simulatr_function object
 #' @param row_idx row index of the parameter grid
 #'
-#' @return a list with updated sim_spec object and ordered list of args
+#' @return a list with the B-updated sim_spec object and ordered list of args
 #' @export
 setup_script <- function(simulatr_spec, B_in, function_object, row_idx) {
   # 1. set the seed
@@ -17,12 +20,7 @@ setup_script <- function(simulatr_spec, B_in, function_object, row_idx) {
   # 2. set B to B_in if B_in is nonzero
   if (B_in != 0) simulatr_spec <- update_B_sim_spec(simulatr_spec, B_in)
 
-  # 3. load packages
-  packs_to_load <- function_object@packages
-  if (!(identical(packs_to_load, NA_character_))) invisible(lapply(packs_to_load, function(pack)
-    library(pack, character.only = TRUE))) # side effect
-
-  # 4. obtain arguments
+  # 3. obtain arguments
   ordered_args <-
     if (identical(function_object@arg_names, NA_character_)) {
       list()

@@ -1,0 +1,132 @@
+Jun-15 22:08:28.646 [main] DEBUG nextflow.cli.Launcher - $> nextflow /Users/timbarry/research_code/simulatr-pipeline/main_revision.nf --simulatr_specifier_fp /Users/timbarry/simulatr_dir/sim_spec_obj.rds --B 10 --result_dir /Users/timbarry/simulatr_dir --result_name result.rds
+Jun-15 22:08:28.768 [main] INFO  nextflow.cli.CmdRun - N E X T F L O W  ~  version 21.04.3
+Jun-15 22:08:28.790 [main] INFO  nextflow.cli.CmdRun - Launching `/Users/timbarry/research_code/simulatr-pipeline/main_revision.nf` [nostalgic_lamarr] - revision: 2c196677e0
+Jun-15 22:08:28.801 [main] DEBUG nextflow.config.ConfigBuilder - Found config home: /Users/timbarry/.nextflow/config
+Jun-15 22:08:28.801 [main] DEBUG nextflow.config.ConfigBuilder - Found config base: /Users/timbarry/research_code/simulatr-pipeline/nextflow.config
+Jun-15 22:08:28.803 [main] DEBUG nextflow.config.ConfigBuilder - Parsing config file: /Users/timbarry/.nextflow/config
+Jun-15 22:08:28.803 [main] DEBUG nextflow.config.ConfigBuilder - Parsing config file: /Users/timbarry/research_code/simulatr-pipeline/nextflow.config
+Jun-15 22:08:28.825 [main] DEBUG nextflow.config.ConfigBuilder - Applying config profile: `standard`
+Jun-15 22:08:29.500 [main] DEBUG nextflow.config.ConfigBuilder - Applying config profile: `standard`
+Jun-15 22:08:29.544 [main] DEBUG nextflow.plugin.PluginsFacade - Setting up plugin manager > mode=prod; plugins-dir=/Users/timbarry/.nextflow/plugins
+Jun-15 22:08:29.545 [main] DEBUG nextflow.plugin.PluginsFacade - Plugins default=[]
+Jun-15 22:08:29.547 [main] DEBUG nextflow.plugin.PluginsFacade - Plugins local root: .nextflow/plr/empty
+Jun-15 22:08:29.553 [main] INFO  org.pf4j.DefaultPluginStatusProvider - Enabled plugins: []
+Jun-15 22:08:29.554 [main] INFO  org.pf4j.DefaultPluginStatusProvider - Disabled plugins: []
+Jun-15 22:08:29.557 [main] INFO  org.pf4j.DefaultPluginManager - PF4J version 3.4.1 in 'deployment' mode
+Jun-15 22:08:29.563 [main] INFO  org.pf4j.AbstractPluginManager - No plugins
+Jun-15 22:08:29.601 [main] DEBUG nextflow.Session - Session uuid: f242c564-648c-4491-a361-1863e144692e
+Jun-15 22:08:29.601 [main] DEBUG nextflow.Session - Run name: nostalgic_lamarr
+Jun-15 22:08:29.601 [main] DEBUG nextflow.Session - Executor pool size: 8
+Jun-15 22:08:29.614 [main] DEBUG nextflow.cli.CmdRun - 
+  Version: 21.04.3 build 5560
+  Created: 21-07-2021 15:09 UTC (11:09 EDT)
+  System: Mac OS X 10.16
+  Runtime: Groovy 3.0.7 on OpenJDK 64-Bit Server VM 1.8.0_242-b08
+  Encoding: UTF-8 (UTF-8)
+  Process: 26584@Tims-MacBook-Pro-2021.local [127.0.0.1]
+  CPUs: 8 - Mem: 16 GB (709.5 MB) - Swap: 1 GB (987.5 MB)
+Jun-15 22:08:29.627 [main] DEBUG nextflow.Session - Work-dir: /Users/timbarry/research_offsite/work [Mac OS X]
+Jun-15 22:08:29.642 [main] DEBUG nextflow.executor.ExecutorFactory - Extension executors providers=[]
+Jun-15 22:08:29.651 [main] DEBUG nextflow.Session - Observer factory: DefaultObserverFactory
+Jun-15 22:08:29.745 [main] DEBUG nextflow.Session - Session start invoked
+Jun-15 22:08:29.997 [main] DEBUG nextflow.script.ScriptRunner - > Launching execution
+Jun-15 22:08:30.004 [main] DEBUG nextflow.Session - Workflow process names [dsl1]: run_method, obtain_basic_info, generate_data
+Jun-15 22:08:30.090 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Jun-15 22:08:30.090 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Jun-15 22:08:30.095 [main] DEBUG nextflow.executor.Executor - [warm up] executor > local
+Jun-15 22:08:30.100 [main] DEBUG n.processor.LocalPollingMonitor - Creating local task monitor for executor 'local' > cpus=8; memory=16 GB; capacity=8; pollInterval=100ms; dumpInterval=5m
+Jun-15 22:08:30.252 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Jun-15 22:08:30.252 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Jun-15 22:08:30.271 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Jun-15 22:08:30.271 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Jun-15 22:08:30.274 [main] DEBUG nextflow.script.ScriptRunner - > Await termination 
+Jun-15 22:08:30.274 [main] DEBUG nextflow.Session - Session await
+Jun-15 22:08:30.308 [Task submitter] DEBUG nextflow.executor.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Jun-15 22:08:30.312 [Task submitter] INFO  nextflow.Session - [bd/4852d4] Submitted process > obtain_basic_info
+Jun-15 22:08:30.564 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 1; name: obtain_basic_info; status: COMPLETED; exit: 0; error: -; workDir: /Users/timbarry/research_offsite/work/bd/4852d427010ab2991255dfb10ae2c0]
+Jun-15 22:08:30.608 [Task submitter] DEBUG nextflow.executor.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Jun-15 22:08:30.609 [Task submitter] INFO  nextflow.Session - [01/666999] Submitted process > generate_data (1)
+Jun-15 22:08:30.619 [Task submitter] DEBUG nextflow.executor.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Jun-15 22:08:30.619 [Task submitter] INFO  nextflow.Session - [b8/35fcfe] Submitted process > generate_data (6)
+Jun-15 22:08:30.623 [Task submitter] DEBUG nextflow.executor.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Jun-15 22:08:30.623 [Task submitter] INFO  nextflow.Session - [d6/25fd0c] Submitted process > generate_data (2)
+Jun-15 22:08:30.628 [Task submitter] DEBUG nextflow.executor.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Jun-15 22:08:30.628 [Task submitter] INFO  nextflow.Session - [c7/1665ff] Submitted process > generate_data (5)
+Jun-15 22:08:30.633 [Task submitter] DEBUG nextflow.executor.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Jun-15 22:08:30.634 [Task submitter] INFO  nextflow.Session - [79/7774aa] Submitted process > generate_data (7)
+Jun-15 22:08:30.639 [Task submitter] DEBUG nextflow.executor.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Jun-15 22:08:30.639 [Task submitter] INFO  nextflow.Session - [7c/2a44d1] Submitted process > generate_data (3)
+Jun-15 22:08:30.644 [Task submitter] DEBUG nextflow.executor.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Jun-15 22:08:30.644 [Task submitter] INFO  nextflow.Session - [f2/5482d0] Submitted process > generate_data (8)
+Jun-15 22:08:30.651 [Task submitter] DEBUG nextflow.executor.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Jun-15 22:08:30.651 [Task submitter] INFO  nextflow.Session - [77/0e1836] Submitted process > generate_data (4)
+Jun-15 22:08:31.066 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 2; name: generate_data (1); status: COMPLETED; exit: 0; error: -; workDir: /Users/timbarry/research_offsite/work/01/666999a3ff8df4f3e020e8c33f72c7]
+Jun-15 22:08:31.086 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 7; name: generate_data (6); status: COMPLETED; exit: 0; error: -; workDir: /Users/timbarry/research_offsite/work/b8/35fcfead93277a7af7644d19edc64c]
+Jun-15 22:08:31.090 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 3; name: generate_data (2); status: COMPLETED; exit: 0; error: -; workDir: /Users/timbarry/research_offsite/work/d6/25fd0c01f21af0216e674d7bb80da8]
+Jun-15 22:08:31.097 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 6; name: generate_data (5); status: COMPLETED; exit: 0; error: -; workDir: /Users/timbarry/research_offsite/work/c7/1665ff72c7a4d48abc387641971f84]
+Jun-15 22:08:31.101 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 8; name: generate_data (7); status: COMPLETED; exit: 0; error: -; workDir: /Users/timbarry/research_offsite/work/79/7774aa34bda910a68645577172cc67]
+Jun-15 22:08:31.104 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 4; name: generate_data (3); status: COMPLETED; exit: 0; error: -; workDir: /Users/timbarry/research_offsite/work/7c/2a44d17994ce837efab71c73381275]
+Jun-15 22:08:31.108 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 9; name: generate_data (8); status: COMPLETED; exit: 0; error: -; workDir: /Users/timbarry/research_offsite/work/f2/5482d08ee76923007e96f18244b489]
+Jun-15 22:08:31.111 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 5; name: generate_data (4); status: COMPLETED; exit: 0; error: -; workDir: /Users/timbarry/research_offsite/work/77/0e1836a4652adb84837b7d50876eee]
+Jun-15 22:08:31.120 [Task submitter] DEBUG nextflow.executor.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Jun-15 22:08:31.120 [Task submitter] INFO  nextflow.Session - [c5/6d2d9c] Submitted process > run_method (4)
+Jun-15 22:08:31.129 [Task submitter] DEBUG nextflow.executor.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Jun-15 22:08:31.129 [Task submitter] INFO  nextflow.Session - [e3/0a6a7e] Submitted process > run_method (1)
+Jun-15 22:08:31.133 [Task submitter] DEBUG nextflow.executor.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Jun-15 22:08:31.133 [Task submitter] INFO  nextflow.Session - [c0/55762b] Submitted process > run_method (3)
+Jun-15 22:08:31.138 [Task submitter] DEBUG nextflow.executor.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Jun-15 22:08:31.138 [Task submitter] INFO  nextflow.Session - [93/f2d2d8] Submitted process > run_method (2)
+Jun-15 22:08:31.143 [Task submitter] DEBUG nextflow.executor.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Jun-15 22:08:31.143 [Task submitter] INFO  nextflow.Session - [a5/7e7f43] Submitted process > run_method (7)
+Jun-15 22:08:31.147 [Task submitter] DEBUG nextflow.executor.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Jun-15 22:08:31.148 [Task submitter] INFO  nextflow.Session - [d0/53e46b] Submitted process > run_method (5)
+Jun-15 22:08:31.154 [Task submitter] DEBUG nextflow.executor.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Jun-15 22:08:31.155 [Task submitter] INFO  nextflow.Session - [0c/b221a3] Submitted process > run_method (6)
+Jun-15 22:08:31.160 [Task submitter] DEBUG nextflow.executor.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Jun-15 22:08:31.160 [Task submitter] INFO  nextflow.Session - [89/a9f90e] Submitted process > run_method (8)
+Jun-15 22:08:31.248 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 13; name: run_method (4); status: COMPLETED; exit: 2; error: -; workDir: /Users/timbarry/research_offsite/work/c5/6d2d9c4a13cde10b2a7be1e651400f]
+Jun-15 22:08:31.252 [Task submitter] DEBUG nextflow.executor.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Jun-15 22:08:31.253 [Task submitter] INFO  nextflow.Session - [50/976405] Submitted process > run_method (9)
+Jun-15 22:08:31.309 [Task monitor] ERROR nextflow.processor.TaskProcessor - Error executing process > 'run_method (4)'
+
+Caused by:
+  Process `run_method (4)` terminated with an error exit status (2)
+
+Command executed:
+
+  run_method.R sim_spec_obj.rds data_list.rds lasso 10
+
+Command exit status:
+  2
+
+Command output:
+  (empty)
+
+Command error:
+  /Users/timbarry/research_code/simulatr-pipeline/bin/run_method.R: line 2: syntax error near unexpected token `('
+  /Users/timbarry/research_code/simulatr-pipeline/bin/run_method.R: line 2: `args <- commandArgs(trailingOnly = TRUE)'
+
+Work dir:
+  /Users/timbarry/research_offsite/work/c5/6d2d9c4a13cde10b2a7be1e651400f
+
+Tip: view the complete command output by changing to the process work dir and entering the command `cat .command.out`
+Jun-15 22:08:31.315 [Task monitor] DEBUG nextflow.Session - Session aborted -- Cause: Process `run_method (4)` terminated with an error exit status (2)
+Jun-15 22:08:31.339 [main] DEBUG nextflow.Session - Session await > all process finished
+Jun-15 22:08:31.339 [main] DEBUG nextflow.Session - Session await > all barriers passed
+Jun-15 22:08:31.339 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 10; name: run_method (1); status: COMPLETED; exit: 2; error: -; workDir: /Users/timbarry/research_offsite/work/e3/0a6a7e60692aecd37c8906024808d3]
+Jun-15 22:08:31.341 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 11; name: run_method (3); status: COMPLETED; exit: 2; error: -; workDir: /Users/timbarry/research_offsite/work/c0/55762bd2a0081fbbd5adcdaf6a4825]
+Jun-15 22:08:31.343 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 12; name: run_method (2); status: COMPLETED; exit: 2; error: -; workDir: /Users/timbarry/research_offsite/work/93/f2d2d8c46f1fd01ebdbfa02f02210f]
+Jun-15 22:08:31.345 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 16; name: run_method (7); status: COMPLETED; exit: 2; error: -; workDir: /Users/timbarry/research_offsite/work/a5/7e7f43afb53c7c2e440da9e16b294a]
+Jun-15 22:08:31.346 [main] WARN  n.processor.TaskPollingMonitor - Killing pending tasks (4)
+Jun-15 22:08:31.348 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 14; name: run_method (5); status: COMPLETED; exit: 2; error: -; workDir: /Users/timbarry/research_offsite/work/d0/53e46b560ea7aa45aafe9ae094c760]
+Jun-15 22:08:31.352 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 15; name: run_method (6); status: COMPLETED; exit: 2; error: -; workDir: /Users/timbarry/research_offsite/work/0c/b221a3267f03473f41a5bf4cd17560]
+Jun-15 22:08:31.354 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 17; name: run_method (8); status: COMPLETED; exit: 2; error: -; workDir: /Users/timbarry/research_offsite/work/89/a9f90e3c55cf041d736d993583c6a6]
+Jun-15 22:08:31.369 [main] DEBUG nextflow.executor.LocalTaskHandler - Unable to kill run_method (8) -- command: kill -TERM 26882; exit: 1 
+ bash: line 0: kill: (26882) - No such process
+
+Jun-15 22:08:31.383 [main] DEBUG nextflow.executor.LocalTaskHandler - Unable to kill run_method (9) -- command: kill -TERM 27008; exit: 1 
+ bash: line 0: kill: (27008) - No such process
+
+Jun-15 22:08:31.387 [main] DEBUG nextflow.trace.WorkflowStatsObserver - Workflow completed > WorkflowStats[succeededCount=9; failedCount=9; ignoredCount=0; cachedCount=0; pendingCount=79; submittedCount=1; runningCount=-2; retriesCount=0; abortedCount=1; succeedDuration=3.6s; failedDuration=1.5s; cachedDuration=0ms;loadCpus=-2; loadMemory=0; peakRunning=8; peakCpus=8; peakMemory=0; ]
+Jun-15 22:08:31.546 [main] DEBUG nextflow.CacheDB - Closing CacheDB done
+Jun-15 22:08:31.562 [main] DEBUG nextflow.script.ScriptRunner - > Execution complete -- Goodbye
