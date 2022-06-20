@@ -64,3 +64,16 @@ check <- check_simulatr_specifier_object(simulatr_spec = simulatr_spec, B_in = 3
 sim_dir <- "~/simulatr_dir"
 if (!dir.exists(sim_dir)) dir.create("~/simulatr_dir")
 saveRDS(object = simulatr_spec, file = "~/simulatr_dir/sim_spec_obj.rds")
+
+
+if (FALSE) {
+  # compute n processors
+  max_times <- data.frame(check$method_times) |> apply(MARGIN = 1, FUN = max)
+  n_rep <- simulatr_spec@fixed_parameters$B
+  total_seconds <- max_times * n_rep
+
+  # four hours (in seconds)
+  time_thresh <- 60 * 60 * 4
+  n_processors <- ceiling(total_seconds/time_thresh)
+  simulatr_spec@parameter_grid$n_processors <- n_processors
+}
