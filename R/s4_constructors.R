@@ -46,6 +46,10 @@ simulatr_specifier <- function(parameter_grid,
                                fixed_parameters,
                                generate_data_function,
                                run_method_functions) {
+  # check if tibble; if so, convert to data frame
+  if ("tbl" %in% class(parameter_grid)) {
+    parameter_grid <- as.data.frame(parameter_grid)
+  }
   new(Class = "simulatr_specifier",
       parameter_grid = parameter_grid,
       fixed_parameters = fixed_parameters,
