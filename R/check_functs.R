@@ -54,13 +54,16 @@ check_simulatr_specifier_object <- function(simulatr_spec, B_in = NULL, parallel
     B <- get_param_from_simulatr_spec(simulatr_spec, row_idx, "B")
     # generate the data, while clocking the time and looking for errors
     tryCatch({
+      invisible(gc(reset = TRUE)) # garbage collect prior to generating data
       time <- suppressMessages(system.time(
         if (data_generator@loop) {
           data_list <- replicate(B, do.call(data_generator@f, ordered_args), FALSE)
         } else {
           data_list <- do.call(data_generator@f, ordered_args)
         })[["elapsed"]]/B)
-      return(list(error = FALSE, warning = FALSE, time = time, data_list = data_list))
+      bytes <- get_memory_used()/B
+      return(list(error = FALSE, warning = FALSE, time = time,
+                  bytes = bytes, data_list = data_list))
       # handle errors and warnings
     }, error = function(e) {
       return(list(error = TRUE, warning = FALSE, ordered_args = ordered_args, msg = e))
@@ -72,13 +75,14 @@ check_simulatr_specifier_object <- function(simulatr_spec, B_in = NULL, parallel
   if (query_funct$stop_funct) return(query_funct$ret_val)
   # no errors; get the times and data_lists
   data_generation_times <- sapply(data_generation_out, function(i) i$time)
+  data_generation_bytes <- sapply(data_generation_out, function(i) i$bytes)
   data_lists <- lapply(data_generation_out, function(i) i$data_list)
 
   # Next, apply each method to each simulated dataset
   method_names <- names(simulatr_spec@run_method_functions)
   n_methods <- length(method_names)
-  result_lists <- method_times <- vector(mode = "list", length = n_methods)
-  names(result_lists) <- names(method_times) <- method_names
+  result_lists <- method_times <- method_bytes <- vector(mode = "list", length = n_methods)
+  names(result_lists) <- names(method_times) <- names(method_bytes) <- method_names
   for (method_name in method_names) {
     cat(paste0("Running method \'", method_name, "\'...\n"))
     method_object <- simulatr_spec@run_method_functions[[method_name]]
@@ -103,6 +107,7 @@ check_simulatr_specifier_object <- function(simulatr_spec, B_in = NULL, parallel
         # get B
         B <- length(data_list)
         # run method, while clocking time and looking for errors
+        invisible(gc(reset = TRUE)) # garbage collect prior to generating data
         time <- suppressMessages(system.time(if (method_object@loop) {
           result_list <- vector(mode = "list", length = length(data_list))
           for (i in seq(1, length(data_list))) {
@@ -116,8 +121,9 @@ check_simulatr_specifier_object <- function(simulatr_spec, B_in = NULL, parallel
           ordered_args[[1]] <- data_list
           result_df <- do.call(method_object@f, ordered_args)
         })[["elapsed"]]/B)
+        bytes <- get_memory_used()/B
         result_df$grid_id <- row_idx
-        return(list(error = FALSE, warning = FALSE, time = time, result_df = result_df))
+        return(list(error = FALSE, warning = FALSE, time = time, bytes = bytes, result_df = result_df))
       }, error = function(e) {
         return(list(error = TRUE, warning = FALSE, ordered_args = ordered_args, msg = e))
       }, warning = function(w) {
@@ -128,6 +134,7 @@ check_simulatr_specifier_object <- function(simulatr_spec, B_in = NULL, parallel
     if (query_funct$stop_funct) return(query_funct$ret_val)
     # no errors; get the times and result_dfs
     method_times[[method_name]] <- sapply(method_out, function(i) i$time)
+    method_bytes[[method_name]] <- sapply(method_out, function(i) i$bytes)
     result_lists[[method_name]] <- do.call(what = rbind, args = lapply(method_out, function(i) i$result_df)) %>%
       dplyr::mutate(method = method_name)
   }
@@ -138,7 +145,12 @@ check_simulatr_specifier_object <- function(simulatr_spec, B_in = NULL, parallel
     cat(paste0("\nSUMMARY: There are ", n_warnings, " warnings (see above). Otherwise, simulatr specifier object is specified correctly.\n"))
   }
   result <- do.call(what = rbind, args = result_lists)
-  return(list(data = data_lists, results = result, data_generation_times = data_generation_times, method_times = method_times))
+  list(data = data_lists,
+       results = result,
+       data_generation_times = data_generation_times,
+       data_generation_bytes = data_generation_bytes,
+       method_times = method_times,
+       method_bytes = method_bytes)
 }
 
 
@@ -176,4 +188,15 @@ check_funct_helper <- function(out_list, funct_name) {
     ret <- list(stop_funct = TRUE, ret_val = ret_val)
   }
   return(ret)
+}
+
+#' Compute memory used since last call to gc(reset = TRUE)
+#'
+#' @return Number of bytes used
+get_memory_used <- function(){
+  BYTES_PER_NCELL <- 56
+  BYTES_PER_VCELL <- 8
+  gc_output <- gc()
+  gc_output["Ncells","max used"]*BYTES_PER_NCELL +
+    gc_output["Vcells","max used"]*BYTES_PER_VCELL
 }
