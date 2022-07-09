@@ -153,7 +153,6 @@ check_simulatr_specifier_object <- function(simulatr_spec, B_in = NULL, parallel
        method_bytes = method_bytes)
 }
 
-
 check_funct_helper <- function(out_list, funct_name) {
   errors <- sapply(out_list, function(i) i$error)
   warnings <- sapply(out_list, function(i) i$warning)
@@ -193,6 +192,7 @@ check_funct_helper <- function(out_list, funct_name) {
 #' Compute memory used since last call to gc(reset = TRUE)
 #'
 #' @return Number of bytes used
+#' @export
 get_memory_used <- function(){
   BYTES_PER_NCELL <- 56
   BYTES_PER_VCELL <- 8
