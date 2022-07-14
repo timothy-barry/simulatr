@@ -16,8 +16,11 @@ setup_script(simulatr_spec, B_in, function_object, row_idx)
 \item{row_idx}{row index of the parameter grid}
 }
 \value{
-a list with updated sim_spec object and ordered list of args
+a list with the B-updated sim_spec object and ordered list of args
 }
 \description{
-Runs setup for either the generate_data.R script or run_methods.R script.
+Runs setup for either the generate_data.R script or run_methods.R script. This script
+i) sets the seed (which has a global side-effect)
+ii) updates the value of B, if B !=0 (the default)
+iii) obtains the ordered set of arguments
 }
