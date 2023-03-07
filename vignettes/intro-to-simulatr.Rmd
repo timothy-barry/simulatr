@@ -188,7 +188,7 @@ We see that `simulatr` has concatenated the results from running each method on 
 
 Suppose we wish to compute the RMSE for estimating the first variable:
 
-```{r, fig.align='center'}
+```{r, fig.align='center', fig.width=6, fig.height = 4}
 sim_results$results |>
   left_join(parameter_grid |> mutate(grid_id = row_number()),
             by = "grid_id") |>

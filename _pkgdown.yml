@@ -1,4 +1,22 @@
-url: ~
-template:
-  bootstrap: 5
+url: katsevich-lab.github.io/simulatr/
 
+authors:
+  "Timothy Barry":
+    href: https://timothy-barry.github.io/
+  "Eugene Katsevich":
+    href: https://ekatsevi.github.io/
+
+development:
+  mode: auto
+
+template:
+  params:
+    bootswatch: lumen
+
+navbar:
+  type: default
+  left:
+  - text: Function reference
+    href: reference/index.html
+  - text: Tutorial
+    href: articles/intro-to-simulatr.html
