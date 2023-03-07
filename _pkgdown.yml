@@ -16,7 +16,5 @@ template:
 navbar:
   type: default
   left:
-  - text: Function reference
-    href: reference/index.html
   - text: Tutorial
     href: articles/intro-to-simulatr.html
