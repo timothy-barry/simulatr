@@ -13,7 +13,7 @@ seamlessly run the simulation at-scale on a distributed computing
 platform. Supported platforms will include high-performance computing
 clusters and cloud computing services (e.g., Microsoft Azure, Amazon Web
 Services, etc.). Please visit the
-[`simulatr-pipeline`](https://github.com/timothy-barry/simulatr-command-line)
+[`simulatr-pipeline`](https://github.com/katsevich-lab/simulatr-pipeline)
 repository to download the associated `simulatr` Nextflow pipeline. Note
 the `simulatr` allows simulations to be run directly in RStudio as well.
 
