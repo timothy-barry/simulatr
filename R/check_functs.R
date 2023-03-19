@@ -150,7 +150,7 @@ check_simulatr_specifier_object <- function(simulatr_spec, B_in = NULL, return_d
   # join the results with the parameter grid
   results_joined <- results |> 
     dplyr::left_join(simulatr_spec@parameter_grid |> 
-                dplyr::mutate(grid_id = row_number()) |> 
+                dplyr::mutate(grid_id = dplyr::row_number()) |> 
                 dplyr::select(grid_id, ground_truth), 
               by = "grid_id")
   
@@ -159,7 +159,7 @@ check_simulatr_specifier_object <- function(simulatr_spec, B_in = NULL, return_d
     metrics <- lapply(names(simulatr_spec@evaluation_functions), function(fun_name){
       results_joined |> 
         dplyr::rowwise() |>
-        dplyr::mutate(metric = fun_name, value = evaluation_functions[[fun_name]](output, ground_truth)) |>
+        dplyr::mutate(metric = fun_name, value = simulatr_spec@evaluation_functions[[fun_name]](output, ground_truth)) |>
         dplyr::ungroup()
     }) |>
       dplyr::bind_rows() |>

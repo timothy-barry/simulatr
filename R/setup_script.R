@@ -43,12 +43,12 @@ setup_script <- function(simulatr_spec, B_in, function_object, row_idx) {
 #' @export
 collate_result_list <- function(result_df, proc_id, row_idx, method) {
   colnames_result_df <- colnames(result_df)
-  convert_to_factor <- c(c("run_id", "proc_id", "grid_row_id", "method", "id"),
+  convert_to_factor <- c(c("method"),
                          if ("parameter" %in% colnames_result_df) "parameter" else NULL,
                          if ("target" %in% colnames_result_df) "target" else NULL)
 
   out <- result_df %>% dplyr::mutate(proc_id = proc_id,
-                              grid_row_id = row_idx,
+                              grid_id = row_idx,
                               method = method,
                               id = paste0(method, "-",
                                           row_idx, "-",
