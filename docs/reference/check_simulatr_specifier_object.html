@@ -44,7 +44,12 @@
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">check_simulatr_specifier_object</span><span class="op">(</span><span class="va">simulatr_spec</span>, B_in <span class="op">=</span> <span class="cn">NULL</span>, parallel <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">check_simulatr_specifier_object</span><span class="op">(</span></span>
+<span>  <span class="va">simulatr_spec</span>,</span>
+<span>  B_in <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  return_data <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  parallel <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -55,6 +60,10 @@
 
 <dt>B_in</dt>
 <dd><p>(default determined by simulatr_spec) number of resamples to use</p></dd>
+
+
+<dt>return_data</dt>
+<dd><p>(default false) whether to return the data</p></dd>
 
 
 <dt>parallel</dt>

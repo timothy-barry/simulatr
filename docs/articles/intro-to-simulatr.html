@@ -79,12 +79,39 @@ numerical simulation.</p>
 <div class="section level3">
 <h3 id="the-conceptual-structure-of-a-numerical-simulation">The conceptual structure of a numerical simulation<a class="anchor" aria-label="anchor" href="#the-conceptual-structure-of-a-numerical-simulation"></a>
 </h3>
-<p>A numerical simulation consists of generating <code>B</code> data
-realizations (or data sets) from one or more data-generating
-distributions, and then applying one or more analysis methods to each
-data set. The data-generating distributions are specified by <em>problem
-parameters</em>. Each combination of parameters, called a <em>problem
-setting</em>, gives rise to a data-generating distribution.</p>
+<p>The goal of a numerical simulation is to evaluate the performance of
+one or more statistical methods on data generated from one or more
+data-generating distributions.</p>
+<ul>
+<li><p><strong>Problem parameters and inferential targets.</strong> Each
+data-generating distribution is indexed by a number of <em>problem
+parameters</em>, e.g. the sample size or dimension of the problem,
+collectively called a <em>problem setting</em>. The problem parameters
+give rise to ground truth values of <em>inferential targets</em>,
+e.g. coefficients in a regression. The mapping between problem
+parameters and ground truth inferential target values, <em>inferential
+target generation</em>, may be either deterministic or
+randomized.</p></li>
+<li><p><strong>Data generation.</strong> The problem parameters and
+inferential target values give rise to a data-generating distribution.
+These, together with <em>simulation parameters</em> (e.g. the number of
+Monte Carlo realizations <code>B</code> to generate) are plugged into
+the <em>data generation</em> function to get data realizations for each
+data-generating distribution.</p></li>
+<li><p><strong>Method application.</strong> Each of the <em>methods</em>
+functions is applied to each realization of each data-generating
+distribution to give a number of <em>method outputs</em>. These outputs
+should include values for each inferential target (e.g. coefficient
+estimates).</p></li>
+<li><p><strong>Method evaluation.</strong> Then, one or more
+<em>evaluation functions</em> take as input the ground truth inferential
+target values and method outputs and compute some metric of inferential
+accuracy (e.g. root-mean-squared error). These <em>evaluation
+results</em> for each method and each problem setting, averaged over
+<code>B</code> Monte Carlo realizations, are the final output of the
+simulation study.</p></li>
+</ul>
+<p><img src="../reference/figures/simulatr-schematic.png" width="100%"></p>
 </div>
 <div class="section level3">
 <h3 id="simulatr-specifier-objects">
@@ -92,32 +119,41 @@ setting</em>, gives rise to a data-generating distribution.</p>
 </h3>
 <p>In <code>simulatr</code>, the aforementioned components are all
 captured by a <em><code>simulatr</code> specifier object</em>. This
-object has four fields, which are described below:</p>
+object has five fields, which are described below:</p>
 <ul>
 <li>
 <code>parameter_grid</code>: A data frame whose rows correspond to
-problem settings and whose columns are parameters.</li>
+problem settings and whose columns are problem parameters. Additionally,
+the <code>parameter_grid</code> contains a special column called
+<code>ground_truth</code>, which contains an object of ground truth
+inferential target values for each problem setting (implemented as a <a href="https://r4ds.hadley.nz/rectangling.html#list-columns" class="external-link">list-column</a>).</li>
 <li>
-<code>fixed_parameters</code>: A list of parameters that is
-applicable to each problem setting. One special fixed parameter is
-<code>B</code>, the number of data realizations to generate per problem
-setting.</li>
+<code>fixed_parameters</code>: An object whose fields are either
+simulation parameters or problem parameters common to all problem
+setting. This object must contain at least the fields <code>B</code>,
+the number of data realizations to generate per problem setting, and
+<code>seed</code>, the seed to set prior to the generation of data for
+each problem setting and prior to the application of each method.</li>
 <li>
 <code>generate_data_function</code>: A function that takes as input
-the problem parameters and outputs either (1) one data set or (2)
-<code>B</code> data sets. The latter option is useful in cases where all
-data sets are faster to generate together rather than one at a
-time.</li>
+the problem parameters and ground truth inferential target values and
+outputs either (1) one data set or (2) <code>B</code> data sets. The
+latter option is useful in cases where all data sets are faster to
+generate together rather than one at a time.</li>
 <li>
 <code>run_method_functions</code>: A named list of <em>method
 functions</em>. A method function takes as input either (1) one data set
-or (2) <code>B</code> data sets and outputs a data frame with at least
-three columns: <code>parameter</code>, <code>target</code>, and
-<code>value</code>. In case 2, there is a fourth column called
-<code>run_id</code> corresponding to the data realization. In a variable
-selection context, <code>parameter</code> would store the variable being
-tested, <code>target</code> would be the string “p-value”, and
-<code>value</code> would be the p-value for that variable.</li>
+or (2) <code>B</code> data sets. In case (1), the function outputs an
+object that contains fields with names corresponding to the inferential
+targets. In case (2), the function outputs a data frame with two
+columns: one column named <code>run_id</code> corresponding to the Monte
+Carlo replicate and one list-column named <code>output</code> containing
+the objects outputted for each replicate.</li>
+<li>
+<code>evaluation_functions</code>: A named list of <em>evaluation
+functions</em>. An evaluation function takes as input two objects: the
+ground truth inferential targets and the outputs from a method function.
+It outputs the value of an evaluation metric.</li>
 </ul>
 </div>
 <div class="section level3">
@@ -126,7 +162,7 @@ tested, <code>target</code> would be the string “p-value”, and
 </h3>
 <ol style="list-style-type: decimal">
 <li><p><strong>Assemble simulation components.</strong> First, assemble
-the four objects described in the previous section.</p></li>
+the five objects described in the previous section.</p></li>
 <li>
 <p><strong>Create a <code>simulatr</code> specifier object.</strong>
 Given the four simulation components, create a <code>simulatr</code>
@@ -137,7 +173,8 @@ function:</p>
 <span>  <span class="va">parameter_grid</span>,</span>
 <span>  <span class="va">fixed_parameters</span>,</span>
 <span>  <span class="va">generate_data_function</span>, </span>
-<span>  <span class="va">run_method_functions</span></span>
+<span>  <span class="va">run_method_functions</span>,</span>
+<span>  <span class="va">evaluation_functions</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 </li>
 <li>
@@ -153,8 +190,10 @@ number for <code>B_in</code> like 2 or 3.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">check_results</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/check_simulatr_specifier_object.html">check_simulatr_specifier_object</a></span><span class="op">(</span><span class="va">simulatr_spec</span>, B_in <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span></code></pre></div>
 <p>If there are any errors, <code>simulatr</code> will give informative
-error messages that will help you identify the problem. Update the
-<code>simulatr</code> specifier object to fix any issues.</p>
+error messages that will let you know which method and which parameter
+setting caused the problem, along with the corresponding data
+realization. Update the <code>simulatr</code> specifier object to fix
+any issues.</p>
 </li>
 <li>
 <p><strong>Run the simulation.</strong> There are two options for
@@ -167,13 +206,13 @@ small-scale simulations, can be done using the
 omitting the <code>B_in</code> argument:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">simulation_results</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/check_simulatr_specifier_object.html">check_simulatr_specifier_object</a></span><span class="op">(</span><span class="va">simulatr_spec</span><span class="op">)</span></span></code></pre></div>
-<p>Option 2, good for large-scale simulations, is currently <a href="https://github.com/Katsevich-Lab/simulatr-pipeline" class="external-link">available</a>
+<p>Option 2, good for large-scale simulations, is currently available
 but not yet documented.</p>
 </li>
-<li><p><strong>Summarize and / or visualize the results.</strong> Once
-you have the output of each method on each realization of each data set,
-you can summarize the results by computing quantities like Type-I error,
-mean-squared error, etc.</p></li>
+<li><p><strong>Summarize and / or visualize the results.</strong> The
+<code>simulatr</code> output will give you the value of each evaluation
+metric on each method on each problem setting. You can then create
+tables or graphs of these results.</p></li>
 </ol>
 </div>
 </div>
@@ -202,40 +241,66 @@ all problem parameters in <code>parameter_grid</code>.</p>
 <span>  s <span class="op">=</span> <span class="fl">5</span>,                       <span class="co"># number of nonzero coefficients</span></span>
 <span>  beta_val <span class="op">=</span> <span class="fl">3</span>                 <span class="co"># value of nonzero coefficients</span></span>
 <span><span class="op">)</span></span></code></pre></div>
+<p>Next, we want to create the ground truth inferential targets based on
+the problem parameters. In this case, the inferential target is the
+coefficient vector. We define a function <code>get_ground_truth()</code>
+that takes as input three of the problem parameters and outputs the
+coefficient vector:</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">get_ground_truth</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">p</span>, <span class="va">s</span>, <span class="va">beta_val</span><span class="op">)</span><span class="op">{</span></span>
+<span>  <span class="va">beta</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">numeric</a></span><span class="op">(</span><span class="va">p</span><span class="op">)</span></span>
+<span>  <span class="va">beta</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="va">s</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">beta_val</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>beta <span class="op">=</span> <span class="va">beta</span><span class="op">)</span></span>
+<span><span class="op">}</span></span></code></pre></div>
+<p>We can append these ground truth inferential targets to
+<code>parameter_grid</code> using the helper function
+<code><a href="../reference/add_ground_truth.html">add_ground_truth()</a></code>:</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">parameter_grid</span> <span class="op">&lt;-</span> <span class="va">parameter_grid</span> <span class="op">|&gt;</span> <span class="fu"><a href="../reference/add_ground_truth.html">add_ground_truth</a></span><span class="op">(</span><span class="va">get_ground_truth</span><span class="op">)</span></span></code></pre></div>
+<p>Let’s take a look at the resulting parameter grid:</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">parameter_grid</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 4 × 5</span></span></span>
+<span><span class="co">#&gt;       n     p     s beta_val ground_truth    </span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;list&gt;</span>          </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>    25    15     5        3 <span style="color: #949494;">&lt;named list [1]&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>    50    15     5        3 <span style="color: #949494;">&lt;named list [1]&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>    75    15     5        3 <span style="color: #949494;">&lt;named list [1]&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>   100    15     5        3 <span style="color: #949494;">&lt;named list [1]&gt;</span></span></span></code></pre></div>
+<p>We see the four columns with problem parameters and the fifth with
+the ground truth coefficient vectors.</p>
 </li>
 <li>
 <p><code>fixed_parameters</code>. Here we put only the number of
 data realizations <code>B</code> and the seed to set for the
 simulation.</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fixed_parameters</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
-<span>  B <span class="op">=</span> <span class="fl">10</span>,                      <span class="co"># number of data realizations</span></span>
-<span>  seed <span class="op">=</span> <span class="fl">4</span>,                    <span class="co"># seed to set prior to generating data and running methods</span></span>
-<span>  n_processors <span class="op">=</span> <span class="fl">1</span>             <span class="co"># necessary argument, but ignore for now</span></span>
+<span>  B <span class="op">=</span> <span class="fl">20</span>,                      <span class="co"># number of data realizations</span></span>
+<span>  seed <span class="op">=</span> <span class="fl">4</span>                    <span class="co"># seed to set prior to generating data and running methods</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 </li>
 <li>
 <p><code>generate_data_function</code>. We define the
 data-generation function as follows:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># define data-generating model based on the Gaussian linear model</span></span>
-<span><span class="va">generate_data_f</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">n</span>, <span class="va">p</span>, <span class="va">s</span>, <span class="va">beta_val</span><span class="op">)</span><span class="op">{</span></span>
+<span><span class="va">generate_data_f</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">n</span>, <span class="va">p</span>, <span class="va">ground_truth</span><span class="op">)</span><span class="op">{</span></span>
 <span>  <span class="va">X</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">n</span><span class="op">*</span><span class="va">p</span><span class="op">)</span>, <span class="va">n</span>, <span class="va">p</span>, dimnames <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="cn">NULL</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"X"</span>, <span class="fl">1</span><span class="op">:</span><span class="va">p</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
-<span>  <span class="va">beta</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">numeric</a></span><span class="op">(</span><span class="va">p</span><span class="op">)</span></span>
-<span>  <span class="va">beta</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="va">s</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">beta_val</span></span>
-<span>  <span class="va">y</span> <span class="op">&lt;-</span> <span class="va">X</span> <span class="op"><a href="https://rdrr.io/r/base/matmult.html" class="external-link">%*%</a></span> <span class="va">beta</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span></span>
+<span>  <span class="va">y</span> <span class="op">&lt;-</span> <span class="va">X</span> <span class="op"><a href="https://rdrr.io/r/base/matmult.html" class="external-link">%*%</a></span> <span class="va">ground_truth</span><span class="op">$</span><span class="va">beta</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span></span>
 <span>  <span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>X <span class="op">=</span> <span class="va">X</span>, y <span class="op">=</span> <span class="va">y</span><span class="op">)</span></span>
 <span>  <span class="va">data</span></span>
 <span><span class="op">}</span></span></code></pre></div>
-<p>Additionally, we need to call <code><a href="../reference/simulatr_function.html">simulatr_function()</a></code> to add
-a few pieces of information that <code>simulatr</code> needs. In
-particular, we have to give it the argument names of the data-generating
-function (typically obtained using
+<p>Note that we extract the coefficient vector <code>beta</code> from
+the <code>ground_truth</code> object. Additionally, we need to call
+<code><a href="../reference/simulatr_function.html">simulatr_function()</a></code> to add a few pieces of information that
+<code>simulatr</code> needs. In particular, we have to give it the
+argument names of the data-generating function (typically obtained using
 <code>formalArgs(generate_data_f)</code>, as below). We also have to let
 <code>simulatr</code> know whether the data-generating function creates
 just one realization of the data (<code>loop = TRUE</code>) or all
 <code>B</code> at the same time (<code>loop = FALSE</code>).</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># need to call simulatr_function() to give simulatr a few more pieces of info</span></span>
 <span><span class="va">generate_data_function</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/simulatr_function.html">simulatr_function</a></span><span class="op">(</span></span>
 <span>  f <span class="op">=</span> <span class="va">generate_data_f</span>,                        </span>
@@ -246,17 +311,14 @@ just one realization of the data (<code>loop = TRUE</code>) or all
 <li>
 <p><code>run_method_functions</code>. Let’s define functions for OLS
 and lasso:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># ordinary least squares</span></span>
 <span><span class="va">ols_f</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">data</span><span class="op">)</span><span class="op">{</span></span>
 <span>  <span class="va">X</span> <span class="op">&lt;-</span> <span class="va">data</span><span class="op">$</span><span class="va">X</span></span>
 <span>  <span class="va">y</span> <span class="op">&lt;-</span> <span class="va">data</span><span class="op">$</span><span class="va">y</span></span>
 <span>  <span class="va">lm_fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">y</span> <span class="op">~</span> <span class="va">X</span> <span class="op">-</span> <span class="fl">1</span><span class="op">)</span></span>
 <span>  <span class="va">beta_hat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef</a></span><span class="op">(</span><span class="va">lm_fit</span><span class="op">)</span></span>
-<span>  <span class="va">results</span> <span class="op">&lt;-</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span></span>
-<span>    parameter <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">X</span><span class="op">)</span>, </span>
-<span>    target <span class="op">=</span> <span class="st">"estimate"</span>, </span>
-<span>    value <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/unname.html" class="external-link">unname</a></span><span class="op">(</span><span class="va">beta_hat</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="va">results</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>beta <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/unname.html" class="external-link">unname</a></span><span class="op">(</span><span class="va">beta_hat</span><span class="op">)</span><span class="op">)</span></span>
 <span>  <span class="va">results</span></span>
 <span><span class="op">}</span></span>
 <span></span>
@@ -266,10 +328,7 @@ and lasso:</p>
 <span>  <span class="va">y</span> <span class="op">&lt;-</span> <span class="va">data</span><span class="op">$</span><span class="va">y</span></span>
 <span>  <span class="va">glmnet_fit</span> <span class="op">&lt;-</span> <span class="fu">glmnet</span><span class="fu">::</span><span class="fu"><a href="https://glmnet.stanford.edu/reference/cv.glmnet.html" class="external-link">cv.glmnet</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">X</span>, y <span class="op">=</span> <span class="va">y</span>, nfolds <span class="op">=</span> <span class="fl">5</span>, intercept <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span>  <span class="va">beta_hat</span> <span class="op">&lt;-</span> <span class="fu">glmnet</span><span class="fu">::</span><span class="fu"><a href="https://glmnet.stanford.edu/reference/predict.glmnet.html" class="external-link">coef.glmnet</a></span><span class="op">(</span><span class="va">glmnet_fit</span>, s <span class="op">=</span> <span class="st">"lambda.1se"</span><span class="op">)</span></span>
-<span>  <span class="va">results</span> <span class="op">&lt;-</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span></span>
-<span>    parameter <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">X</span><span class="op">)</span>, </span>
-<span>    target <span class="op">=</span> <span class="st">"estimate"</span>, </span>
-<span>    value <span class="op">=</span> <span class="va">beta_hat</span><span class="op">[</span><span class="op">-</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span></span>
+<span>  <span class="va">results</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>beta <span class="op">=</span> <span class="va">beta_hat</span><span class="op">[</span><span class="op">-</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span></span>
 <span>  <span class="va">results</span></span>
 <span><span class="op">}</span></span></code></pre></div>
 <p>Again, we need to call <code><a href="../reference/simulatr_function.html">simulatr_function()</a></code> to add a few
@@ -279,14 +338,24 @@ first</em> (the data itself), which usually will be empty. We also have
 to let <code>simulatr</code> know whether the method functions input
 just one realization of the data (<code>loop = TRUE</code>) or all
 <code>B</code> at the same time (<code>loop = FALSE</code>).</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># create simulatr functions</span></span>
 <span><span class="va">ols_spec_f</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/simulatr_function.html">simulatr_function</a></span><span class="op">(</span>f <span class="op">=</span> <span class="va">ols_f</span>, arg_names <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="fl">0</span><span class="op">)</span>, loop <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="va">lasso_spec_f</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/simulatr_function.html">simulatr_function</a></span><span class="op">(</span>f <span class="op">=</span> <span class="va">lasso_f</span>, arg_names <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="fl">0</span><span class="op">)</span>, loop <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <p>Finally, we collate the above method functions into a named list. It
 is crucial that the list be named.</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">run_method_functions</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>ols <span class="op">=</span> <span class="va">ols_spec_f</span>, lasso <span class="op">=</span> <span class="va">lasso_spec_f</span><span class="op">)</span></span></code></pre></div>
+</li>
+<li>
+<p><code>evaluation_functions</code>. Let’s evaluate the estimate of
+<code>beta</code> using the RMSE. To accomplish this, we define the
+following evaluation function:</p>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">rmse</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">output</span>, <span class="va">ground_truth</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">sqrt</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="op">(</span><span class="va">output</span><span class="op">$</span><span class="va">beta</span> <span class="op">-</span> <span class="va">ground_truth</span><span class="op">$</span><span class="va">beta</span><span class="op">)</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span><span class="va">evaluation_functions</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>rmse <span class="op">=</span> <span class="va">rmse</span><span class="op">)</span></span></code></pre></div>
 </li>
 </ul>
 </div>
@@ -295,19 +364,20 @@ is crucial that the list be named.</p>
 </h3>
 <p>This is the easiest step; just pass all four of the above components
 to the function <code><a href="../reference/simulatr_specifier.html">simulatr_specifier()</a></code>:</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">simulatr_spec</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/simulatr_specifier.html">simulatr_specifier</a></span><span class="op">(</span></span>
 <span>  <span class="va">parameter_grid</span>,</span>
 <span>  <span class="va">fixed_parameters</span>,</span>
 <span>  <span class="va">generate_data_function</span>, </span>
-<span>  <span class="va">run_method_functions</span></span>
+<span>  <span class="va">run_method_functions</span>,</span>
+<span>  <span class="va">evaluation_functions</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="check-and-if-necessary-update-the-simulatr-specifier-object">3. Check and, if necessary, update the <code>simulatr</code>
 specifier object<a class="anchor" aria-label="anchor" href="#check-and-if-necessary-update-the-simulatr-specifier-object"></a>
 </h3>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">check_results</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/check_simulatr_specifier_object.html">check_simulatr_specifier_object</a></span><span class="op">(</span><span class="va">simulatr_spec</span>, B_in <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Generating data...</span></span>
 <span><span class="co">#&gt; Running method 'ols'...</span></span>
@@ -322,55 +392,50 @@ running the full simulation.</p>
 <h3 id="run-the-simulation">4. Run the simulation<a class="anchor" aria-label="anchor" href="#run-the-simulation"></a>
 </h3>
 <p>Since this example simulation is small, we can run it in RStudio:</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sim_results</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/check_simulatr_specifier_object.html">check_simulatr_specifier_object</a></span><span class="op">(</span><span class="va">simulatr_spec</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Generating data...</span></span>
 <span><span class="co">#&gt; Running method 'ols'...</span></span>
 <span><span class="co">#&gt; Running method 'lasso'...</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; SUMMARY: The simulatr specifier object is specified correctly!</span></span></code></pre></div>
-<p>Let’s take a look at the results:</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">sim_results</span><span class="op">$</span><span class="va">results</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1,200 × 6</span></span></span>
-<span><span class="co">#&gt;    parameter target     value run_id grid_id method</span></span>
-<span><span class="co">#&gt;  <span style="color: #BCBCBC;">*</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> X1        estimate  2.47        1       1 ols   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> X2        estimate  2.99        1       1 ols   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> X3        estimate  3.06        1       1 ols   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> X4        estimate  2.93        1       1 ols   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> X5        estimate  1.87        1       1 ols   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> X6        estimate  0.619       1       1 ols   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> X7        estimate -<span style="color: #BB0000;">0.485</span>       1       1 ols   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> X8        estimate  0.076<span style="text-decoration: underline;">3</span>      1       1 ols   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> X9        estimate -<span style="color: #BB0000;">0.309</span>       1       1 ols   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> X10       estimate  0.273       1       1 ols   </span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># … with 1,190 more rows</span></span></span></code></pre></div>
-<p>We see that <code>simulatr</code> has concatenated the results from
-running each method on each data realization (indexed by
-<code>run_id</code>) for each problem setting (indexed by
-<code>grid_id</code>).</p>
 </div>
 <div class="section level3">
 <h3 id="summarize-andor-visualize-the-results">5. Summarize and/or visualize the results<a class="anchor" aria-label="anchor" href="#summarize-andor-visualize-the-results"></a>
 </h3>
-<p>Suppose we wish to compute the RMSE for estimating the first
-variable:</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">sim_results</span><span class="op">$</span><span class="va">results</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html" class="external-link">left_join</a></span><span class="op">(</span><span class="va">parameter_grid</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>grid_id <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/ranking.html" class="external-link">row_number</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span>,</span>
-<span>            by <span class="op">=</span> <span class="st">"grid_id"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">parameter</span> <span class="op">==</span> <span class="st">"X1"</span>, </span>
-<span>         <span class="va">target</span> <span class="op">==</span> <span class="st">"estimate"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">grid_id</span>, <span class="va">method</span>, <span class="va">n</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarise</a></span><span class="op">(</span>RMSE <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="op">(</span><span class="va">value</span> <span class="op">-</span> <span class="va">beta_val</span><span class="op">)</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span>, .groups <span class="op">=</span> <span class="st">"drop"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">n</span>, y <span class="op">=</span> <span class="va">RMSE</span>, colour <span class="op">=</span> <span class="va">method</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<p>Let’s take a look at the results:</p>
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">sim_results</span><span class="op">$</span><span class="va">metrics</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 8 × 8</span></span></span>
+<span><span class="co">#&gt;   method metric  mean     se     n     p     s beta_val</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> lasso  rmse   1.09  0.125     25    15     5        3</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> ols    rmse   1.40  0.076<span style="text-decoration: underline;">5</span>    25    15     5        3</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> lasso  rmse   0.668 0.039<span style="text-decoration: underline;">4</span>    50    15     5        3</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> ols    rmse   0.666 0.029<span style="text-decoration: underline;">5</span>    50    15     5        3</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> lasso  rmse   0.574 0.035<span style="text-decoration: underline;">9</span>    75    15     5        3</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> ols    rmse   0.488 0.021<span style="text-decoration: underline;">0</span>    75    15     5        3</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">7</span> lasso  rmse   0.525 0.029<span style="text-decoration: underline;">5</span>   100    15     5        3</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">8</span> ols    rmse   0.413 0.011<span style="text-decoration: underline;">9</span>   100    15     5        3</span></span></code></pre></div>
+<p>We have both the mean and Monte Carlo standard error for the metric
+(RMSE) for each method in each problem setting. We can plot these as
+follows:</p>
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">sim_results</span><span class="op">$</span><span class="va">metrics</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">n</span>, </span>
+<span>             y <span class="op">=</span> <span class="va">mean</span>, </span>
+<span>             ymin <span class="op">=</span> <span class="va">mean</span> <span class="op">-</span> <span class="fl">2</span><span class="op">*</span><span class="va">se</span>, </span>
+<span>             ymax <span class="op">=</span> <span class="va">mean</span> <span class="op">+</span> <span class="fl">2</span><span class="op">*</span><span class="va">se</span>, </span>
+<span>             color <span class="op">=</span> <span class="va">method</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> </span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> </span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_linerange.html" class="external-link">geom_errorbar</a></span><span class="op">(</span>width <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="st">"Sample size"</span>,</span>
-<span>       y <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/expression.html" class="external-link">expression</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="st">"RMSE for "</span>, <span class="va">beta</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> </span>
+<span>       y <span class="op">=</span> <span class="st">"RMSE"</span><span class="op">)</span> <span class="op">+</span> </span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span>legend.position <span class="op">=</span> <span class="st">"bottom"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="intro-to-simulatr_files/figure-html/unnamed-chunk-16-1.png" width="576" style="display: block; margin: auto;"></p>
+<p><img src="intro-to-simulatr_files/figure-html/unnamed-chunk-21-1.png" width="576" style="display: block; margin: auto;"></p>
+<p>It looks like lasso performs better for small sample sizes but OLS
+performs better for large sample sizes.</p>
 </div>
 </div>
   </div>
