@@ -3,6 +3,8 @@
 
 # `simulatr`: write portable and scalable simulation code
 
+<img src="man/figures/simulatr-schematic.png" width="100%" />
+
 Simulation studies play a crucial role in the development and assessment
 of statistical methods. However, writing portable and scalable
 simulation code is challenging. With the help of

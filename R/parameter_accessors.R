@@ -15,7 +15,7 @@ get_param_from_simulatr_spec <- function(simulatr_spec, row_idx, param) {
   param_grid <- simulatr_spec@parameter_grid
   fixed_params <- simulatr_spec@fixed_parameters
   if (param %in% colnames(param_grid)) {
-    if (is.null(row_idx)) param_grid[, param] else param_grid[row_idx, param]
+    if (is.null(row_idx)) param_grid[, param] else param_grid[[param]][[row_idx]]
   } else if (param %in% names(fixed_params)) {
     fixed_params[[param]]
   } else {

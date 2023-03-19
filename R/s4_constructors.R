@@ -39,22 +39,21 @@ simulatr_function <- function(f,
 #' @param fixed_parameters a named list storing the values of the parameters that stay fixed across parameter settings
 #' @param generate_data_function a `simulatr_function` that generates the data
 #' @param run_method_functions a named list of `simulatr_functions` that define the methods to be run in the simulation
+#' @param evaluation_functions a named list of functions that define the metrics used to evaluate each method
 #'
 #' @return a `simulatr_specifier` object
 #' @export
 simulatr_specifier <- function(parameter_grid,
                                fixed_parameters,
                                generate_data_function,
-                               run_method_functions) {
-  # check if tibble; if so, convert to data frame
-  if ("tbl" %in% class(parameter_grid)) {
-    parameter_grid <- as.data.frame(parameter_grid)
-  }
+                               run_method_functions,
+                               evaluation_functions = list()) {
   new(Class = "simulatr_specifier",
       parameter_grid = parameter_grid,
       fixed_parameters = fixed_parameters,
       generate_data_function = generate_data_function,
-      run_method_functions = run_method_functions)
+      run_method_functions = run_method_functions,
+      evaluation_functions = evaluation_functions)
 }
 
 

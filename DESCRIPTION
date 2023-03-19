@@ -23,7 +23,8 @@ Imports:
     dplyr,
     purrr,
     tibble,
-    tidyr
+    tidyr,
+    rlang
 Suggests: 
     future,
     future.apply,

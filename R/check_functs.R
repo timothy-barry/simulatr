@@ -4,6 +4,7 @@
 #'
 #' @param simulatr_spec a simulatr_specifier object
 #' @param B_in (default determined by simulatr_spec) number of resamples to use
+#' @param return_data (default false) whether to return the data 
 #' @param parallel (default true) parallelize execution?
 #'
 #' @return if no errors, the list of results; if errors occur, the ordered list of arguments passed to the function in which the error occurred.
@@ -17,7 +18,7 @@
 #' simulatr_spec@fixed_parameters[["n"]] <- 2000
 #' check <- check_simulatr_specifier_object(simulatr_spec, 5)
 #' }
-check_simulatr_specifier_object <- function(simulatr_spec, B_in = NULL, parallel = TRUE) {
+check_simulatr_specifier_object <- function(simulatr_spec, B_in = NULL, return_data = FALSE, parallel = TRUE) {
   # decide which lapply function to use
   if (parallel) {
     future::plan(future::multisession())
@@ -112,8 +113,8 @@ check_simulatr_specifier_object <- function(simulatr_spec, B_in = NULL, parallel
           result_list <- vector(mode = "list", length = length(data_list))
           for (i in seq(1, length(data_list))) {
             ordered_args[[1]] <- data_list[[i]]
-            out <- do.call(method_object@f, ordered_args)
-            out$run_id <- i
+            out <- dplyr::tibble(output = list(do.call(method_object@f, ordered_args)),
+                          run_id = i)
             result_list[[i]] <- out
           }
           result_df <- do.call(rbind, result_list)
@@ -144,13 +145,49 @@ check_simulatr_specifier_object <- function(simulatr_spec, B_in = NULL, parallel
   } else {
     cat(paste0("\nSUMMARY: There are ", n_warnings, " warnings (see above). Otherwise, simulatr specifier object is specified correctly.\n"))
   }
-  result <- do.call(what = rbind, args = result_lists)
-  list(data = data_lists,
-       results = result,
-       data_generation_times = data_generation_times,
-       data_generation_bytes = data_generation_bytes,
-       method_times = method_times,
-       method_bytes = method_bytes)
+  results <- do.call(what = rbind, args = result_lists)
+  
+  # join the results with the parameter grid
+  results_joined <- results |> 
+    dplyr::left_join(simulatr_spec@parameter_grid |> 
+                dplyr::mutate(grid_id = row_number()) |> 
+                dplyr::select(grid_id, ground_truth), 
+              by = "grid_id")
+  
+  # evaluate the metrics
+  if(length(simulatr_spec@evaluation_functions) > 0){
+    metrics <- lapply(names(simulatr_spec@evaluation_functions), function(fun_name){
+      results_joined |> 
+        dplyr::rowwise() |>
+        dplyr::mutate(metric = fun_name, value = evaluation_functions[[fun_name]](output, ground_truth)) |>
+        dplyr::ungroup()
+    }) |>
+      dplyr::bind_rows() |>
+      dplyr::group_by(grid_id, method, metric) |>
+      dplyr::summarise(mean = mean(value), se = sd(value)/sqrt(dplyr::n()), .groups = "drop") |>
+      dplyr::left_join(simulatr_spec@parameter_grid |> 
+                         dplyr::mutate(grid_id = dplyr::row_number()) |> 
+                         dplyr::select(-ground_truth), 
+                       by = "grid_id") |>
+      dplyr::select(-grid_id) |>
+      dplyr::relocate(method, metric, mean, se)
+  } else{
+    metrics <- NULL
+  }
+  
+  # return
+  output <- list(
+    results = results,
+    metrics = metrics,
+    data_generation_times = data_generation_times,
+    data_generation_bytes = data_generation_bytes,
+    method_times = method_times,
+    method_bytes = method_bytes
+  )
+  if(return_data){
+    output$data = data_lists
+  }
+  output
 }
 
 check_funct_helper <- function(out_list, funct_name) {
