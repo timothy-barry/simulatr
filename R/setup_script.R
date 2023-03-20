@@ -31,6 +31,22 @@ setup_script <- function(simulatr_spec, B_in, function_object, row_idx) {
   return(list(simulatr_spec = simulatr_spec, ordered_args = ordered_args))
 }
 
+#' Get ordered arguments for function object
+#'
+#' @param function_object The function object
+#' @param simulatr_spec Simulatr specifier object
+#' @param row_idx The row of the parameter grid from which to get parameter values
+#'
+#' @return List of ordered arguments
+#' @export
+get_ordered_args <- function(function_object, simulatr_spec, row_idx){
+  if (identical(function_object@arg_names, NA_character_)) {
+    list()
+  } else {
+    lapply(function_object@arg_names, function(curr_arg)
+      get_param_from_simulatr_spec(simulatr_spec, row_idx, curr_arg))
+  }
+}
 
 #' Collate result list
 #'

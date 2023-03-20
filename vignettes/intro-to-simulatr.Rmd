@@ -19,7 +19,7 @@ Here we introduce the data structures on which `simulatr` is based and walk thro
 
 ```{r setup, message = FALSE}
 library(simulatr)
-library(tidyverse)
+library(ggplot2)
 ```
 
 # Simulation structure and workflow

@@ -41,12 +41,12 @@ check_simulatr_specifier_object <- function(simulatr_spec, B_in = NULL, return_d
   packs_to_load <- data_generator@packages
   if (!(identical(packs_to_load, NA_character_))) invisible(lapply(packs_to_load, function(pack) library(pack, character.only = TRUE)))
 
+  # extract the seed
+  seed <- simulatr_spec@fixed_parameters$seed
+  
   cat("Generating data...\n")
   # Generate the synthetic data
   data_generation_out <- my_lapply(X = seq(1, n_param_settings), FUN = function(row_idx) {
-    # set seed for given row
-    seed <- get_param_from_simulatr_spec(simulatr_spec, row_idx, "seed")
-    set.seed(seed)
     # obtain arguments
     ordered_args <- lapply(data_generator@arg_names, function(curr_arg) {
       get_param_from_simulatr_spec(simulatr_spec, row_idx, curr_arg)
@@ -58,9 +58,15 @@ check_simulatr_specifier_object <- function(simulatr_spec, B_in = NULL, return_d
       invisible(gc(reset = TRUE)) # garbage collect prior to generating data
       time <- suppressMessages(system.time(
         if (data_generator@loop) {
-          data_list <- replicate(B, do.call(data_generator@f, ordered_args), FALSE)
+          data_list <- lapply(
+            1:B,
+            function(b) {
+              R.utils::withSeed(do.call(data_generator@f, ordered_args),
+                                seed = seed + b)
+            }
+          )
         } else {
-          data_list <- do.call(data_generator@f, ordered_args)
+          data_list <- R.utils::withSeed(do.call(data_generator@f, ordered_args), seed = seed)
         })[["elapsed"]]/B)
       bytes <- get_memory_used()/B
       return(list(error = FALSE, warning = FALSE, time = time,
@@ -93,9 +99,6 @@ check_simulatr_specifier_object <- function(simulatr_spec, B_in = NULL, return_d
     # run the method across all parameter settings
     method_out <- my_lapply(seq(1, n_param_settings), function(row_idx) {
       tryCatch({
-        # set the seed
-        seed <- get_param_from_simulatr_spec(simulatr_spec, row_idx, "seed")
-        set.seed(seed)
         # obtain arguments
         if (identical(method_object@arg_names, NA_character_)) {
           ordered_args <- list(NA)
@@ -113,8 +116,11 @@ check_simulatr_specifier_object <- function(simulatr_spec, B_in = NULL, return_d
           result_list <- vector(mode = "list", length = length(data_list))
           for (i in seq(1, length(data_list))) {
             ordered_args[[1]] <- data_list[[i]]
-            out <- dplyr::tibble(output = list(do.call(method_object@f, ordered_args)),
-                          run_id = i)
+            out <- dplyr::tibble(
+              output = list(R.utils::withSeed(do.call(method_object@f, ordered_args), 
+                                              seed = seed)),
+              run_id = i
+            )
             result_list[[i]] <- out
           }
           result_df <- do.call(rbind, result_list)

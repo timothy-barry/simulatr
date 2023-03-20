@@ -16,7 +16,7 @@ License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.0
+RoxygenNote: 7.2.3
 Imports: 
     methods,
     magrittr,
@@ -24,12 +24,14 @@ Imports:
     purrr,
     tibble,
     tidyr,
-    rlang
+    rlang,
+    R.utils
 Suggests: 
     future,
     future.apply,
     cowplot,
     ggplot2,
     knitr,
-    rmarkdown
+    rmarkdown,
+    glmnet
 VignetteBuilder: knitr
