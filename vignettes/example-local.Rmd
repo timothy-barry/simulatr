@@ -11,7 +11,8 @@ vignette: >
 knitr::opts_chunk$set(
   collapse = TRUE,
   cache = TRUE,
-  comment = "#>"
+  comment = "#>",
+  fig.path = "../man/figures/"
 )
 ```
 
