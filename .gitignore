@@ -5,3 +5,5 @@
 .DS_Store
 example_code/.nextflow*
 inst/doc
+vignettes/*_files/*
+vignettes/*_cache/*

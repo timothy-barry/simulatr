@@ -1,0 +1,18 @@
+---
+title: "`simulatr` on a cluster or cloud"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{simulatr on a cluster or cloud}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  cache = TRUE,
+  comment = "#>"
+)
+```
+
+Here we talk about `simulatr` on a cluster or cloud.

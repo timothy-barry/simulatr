@@ -10,10 +10,19 @@
     <loc>katsevich-lab.github.io/simulatr/LICENSE.html</loc>
   </url>
   <url>
+    <loc>katsevich-lab.github.io/simulatr/articles/example-local.html</loc>
+  </url>
+  <url>
+    <loc>katsevich-lab.github.io/simulatr/articles/example-remote.html</loc>
+  </url>
+  <url>
     <loc>katsevich-lab.github.io/simulatr/articles/index.html</loc>
   </url>
   <url>
     <loc>katsevich-lab.github.io/simulatr/articles/intro-to-simulatr.html</loc>
+  </url>
+  <url>
+    <loc>katsevich-lab.github.io/simulatr/articles/simulatr.html</loc>
   </url>
   <url>
     <loc>katsevich-lab.github.io/simulatr/authors.html</loc>
@@ -59,6 +68,9 @@
   </url>
   <url>
     <loc>katsevich-lab.github.io/simulatr/reference/get_memory_used.html</loc>
+  </url>
+  <url>
+    <loc>katsevich-lab.github.io/simulatr/reference/get_ordered_args.html</loc>
   </url>
   <url>
     <loc>katsevich-lab.github.io/simulatr/reference/get_param_from_simulatr_spec.html</loc>

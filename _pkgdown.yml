@@ -11,10 +11,10 @@ development:
 
 template:
   params:
+    bootstrap: 5
     bootswatch: lumen
 
 navbar:
-  type: default
-  left:
-  - text: Tutorial
-    href: articles/intro-to-simulatr.html
+  structure:
+    left:  [intro, articles]
+    right: [search, github]

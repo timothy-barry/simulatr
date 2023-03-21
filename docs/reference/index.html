@@ -23,8 +23,21 @@
 
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav"><li>
-  <a href="../articles/intro-to-simulatr.html">Tutorial</a>
+  <a href="../articles/simulatr.html">Get started</a>
 </li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    Articles
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu"><li>
+      <a href="../articles/example-local.html">`simulatr` on your laptop</a>
+    </li>
+    <li>
+      <a href="../articles/example-remote.html">`simulatr` on a cluster or cloud</a>
+    </li>
+  </ul></li>
       </ul><ul class="nav navbar-nav navbar-right"></ul></div><!--/.nav-collapse -->
   </div><!--/.container -->
 </div><!--/.navbar -->
@@ -93,6 +106,10 @@
           <p><code><a href="get_memory_used.html">get_memory_used()</a></code> </p>
         </td>
         <td><p>Compute memory used since last call to gc(reset = TRUE)</p></td>
+      </tr><tr><td>
+          <p><code><a href="get_ordered_args.html">get_ordered_args()</a></code> </p>
+        </td>
+        <td><p>Get ordered arguments for function object</p></td>
       </tr><tr><td>
           <p><code><a href="get_param_from_simulatr_spec.html">get_param_from_simulatr_spec()</a></code> </p>
         </td>
