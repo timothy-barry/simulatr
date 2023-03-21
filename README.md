@@ -3,7 +3,7 @@
 
 # `simulatr`: Portable and scalable numerical simulations
 
-<img src="man/figures/simulatr-schematic.png" width="75%" style="display: block; margin: auto;" />
+<img src="man/figures/simulatr-schematic.png" width="100%" style="display: block; margin: auto;" />
 
 Simulation studies play a crucial role in the development and assessment
 of statistical methods. However, writing portable and scalable
