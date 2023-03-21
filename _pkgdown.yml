@@ -10,11 +10,9 @@ development:
   mode: auto
 
 template:
-  params:
-    bootstrap: 5
-    bootswatch: lumen
+  bootstrap: 5
 
 navbar:
   structure:
-    left:  [intro, articles]
+    left:  [intro, articles, news]
     right: [search, github]

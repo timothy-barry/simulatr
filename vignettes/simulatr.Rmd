@@ -1,8 +1,8 @@
 ---
-title: "Introduction to `simulatr`"
+title: "Introduction to simulatr"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Introduction to `simulatr`}
+  %\VignetteIndexEntry{Introduction to simulatr}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -62,10 +62,6 @@ In `simulatr`, the aforementioned components are all captured by a *`simulatr` s
     ```
 If there are any errors, `simulatr` will give informative error messages that will let you know which method and which parameter setting caused the problem, along with the corresponding data realization. Update the `simulatr` specifier object to fix any issues.
 
-4. **Run the simulation.** There are two options for running a numerical simulation with `simulatr`. You can run `simulatr` either (1) using `RStudio` or (2) using the `simulatr` *pipeline*, a Nextflow pipeline intended for distributed computing platforms. Option 1, good for small-scale simulations, can be done using the `check_simulatr_specifier_object()` function from step 3, omitting the `B_in` argument:
-    ```{r, eval = FALSE}
-    simulation_results <- check_simulatr_specifier_object(simulatr_spec)
-    ```
-Option 2, good for large-scale simulations, is currently available but not yet documented.
+4. **Run the simulation.** There are two options for running a numerical simulation with `simulatr`. You can run `simulatr` either (1) [on your laptop](https://katsevich-lab.github.io/simulatr/articles/example-local.html), if your simulation is small or (2) [on a distributed computing platform](https://katsevich-lab.github.io/simulatr/articles/example-remote.html), if your simulation is large.
 
 5. **Summarize and / or visualize the results.** The `simulatr` output will give you the value of each evaluation metric on each method on each problem setting. You can then create tables or graphs of these results.

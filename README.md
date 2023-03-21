@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# `simulatr`: write portable and scalable simulation code
+# `simulatr`: Portable and scalable numerical simulations
 
 <img src="man/figures/simulatr-schematic.png" width="75%" style="display: block; margin: auto;" />
 
@@ -12,16 +12,8 @@ simulation code is challenging. With the help of
 *specification* of a simulation from the *execution* of a simulation,
 enabling users to develop a simulation study on their laptop and then
 seamlessly run the simulation at-scale on a distributed computing
-platform. Supported platforms will include high-performance computing
-clusters and cloud computing services (e.g., Microsoft Azure, Amazon Web
-Services, etc.). Please visit the
-[`simulatr-pipeline`](https://github.com/katsevich-lab/simulatr-pipeline)
-repository to download the associated `simulatr` Nextflow pipeline. Note
-the `simulatr` allows simulations to be run directly in RStudio as well.
-
-Please see the
-[tutorial](https://katsevich-lab.github.io/simulatr/articles/intro-to-simulatr.html)
-to get started.
+platform like a high-performance computing cluster or cloud computing
+service.
 
 **Note**: This package is experimental and under active development. Use
 with caution.
@@ -33,3 +25,11 @@ You can install the development version from
 
     # install.packages("devtools")
     devtools::install_github("katsevich-lab/simulatr")
+
+## Acknowledgment
+
+We thank Jacob Bien for developing the [`simulator`
+package](https://jacobbien.github.io/simulator/), which served as an
+inspiration for `simulatr`. The primary difference is that `simulatr` is
+specifically designed for seamless scaling via distributed computing
+platforms.

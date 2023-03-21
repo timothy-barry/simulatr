@@ -1,5 +1,5 @@
 ---
-title: "`simulatr` on a cluster or cloud"
+title: "simulatr on a cluster or cloud"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{simulatr on a cluster or cloud}
@@ -11,8 +11,65 @@ vignette: >
 knitr::opts_chunk$set(
   collapse = TRUE,
   cache = TRUE,
+  eval = FALSE,
   comment = "#>"
 )
 ```
 
-Here we talk about `simulatr` on a cluster or cloud.
+If you have access to a distributed computing platform (e.g. a computer cluster provided by your university or a cloud computing service like AWS), then you can easily move your `simulatr` simulation from your laptop to this platform.
+
+# 1-3. Create a working `simulatr` specifier object
+
+The *same* `simulatr` specifier object you [created on your laptop](https://katsevich-lab.github.io/simulatr/articles/example-local.html) can be used on your distributed computing platform! Please read the "`simulatr` on your laptop" article (linked above) if you have not done so already. Once you have a `simulatr` specifier object you are happy with, save it to disk using a command like the following:
+```{r}
+saveRDS(object = simulatr_spec, file = simulatr_spec_filename)
+```
+
+# 4. Run the simulation on your distributed computing platform
+
+Running `simulatr` on a distributed computing platform is facilitated by a [Nextflow](https://nextflow.io) pipeline, [`Katsevich-Lab/simulatr-pipeline`](https://github.com/Katsevich-Lab/simulatr-pipeline). This pipeline takes as inputs the `simulatr` specifier file created in steps 1-3, as well as the desired limits on the the memory and time usage of each individual process. It then adaptively parallelizes the simulation tasks accordingly, splitting the replicates for each combination of method and parameter setting into one or more processes. 
+
+Below are instructions for running this pipeline on your distributed computing platform.
+
+## A. Install and configure Nextflow
+
+Installing Nextflow is easy; follow the instructions [here](https://nextflow.io/index.html#GetStarted
+). Next, you must *configure* Nextflow to work with your specific distributed computing platform. To get familiar with Nextflow configuration, you can read [this tutorial](https://carpentries-incubator.github.io/workflows-nextflow/08-configuration/index.html), see [this list](https://github.com/nf-core/configs/tree/master/conf) of configuration files at other institutions, read [5 Nextflow tips for HPC users](https://www.nextflow.io/blog/2021/5_tips_for_hpc_users.html) and [5 more Nextflow tips for HPC users](https://www.nextflow.io/blog/2021/5-more-tips-for-nextflow-user-on-hpc.html), and finally, consult the [Nextflow documentation](https://www.nextflow.io/docs/latest/config.html).
+
+## B. Download the `simulatr` pipeline
+
+To make sure you have the latest version of the `simulatr` pipeline, download it using the shell command
+```{bash}
+nextflow pull katsevich-lab/simulatr-pipeline
+```
+
+## C. Run the `simulatr` pipeline
+
+You can run the `simulatr` pipeline using a command like the following:
+
+```{bash}
+nextflow run katsevich-lab/simulatr-pipeline \
+  --simulatr_specifier_fp /path/to/simspec/obj \
+  --result_dir directory/for/results \
+  --result_file_name "simulatr_result.rds" \
+  --B_check 5 \
+  --B 100 \
+  --max_gb 8 \
+  --max_hours 4
+```
+
+The command-line arguments are described below. Note that only the first (`simulatr_specifier_fp`) is required; the rest have sensible defaults, included in the following descriptions.
+
+- `simulatr_specifier_fp`: (Required) The path to the `simulatr` specifier object saved at the end of steps 1-3 above.
+- `result_dir`: (Optional) The directory in which to write the output file. Defaults to the current working directory. 
+- `result_file_name`: (Optional) The name of the output file. Defaults to `"simulatr_result.rds"`.
+- `B_check`: (Optional) The number of initial simulation replicates to run for each combination of method and parameter setting in order to benchmark the memory and time required for adaptive parallelization. Defaults to 5.
+- `B`: (Optional) The number of simulation replicates to run for the full simulation. Defaults to the value in the `simulatr` specifier object. You may want to set `B` to a small number during an initial trial run. 
+- `max_gb`: (Optional) The maximum number of GB each process has available. This number is used in the adaptive parallelization scheme. Defaults to 8. 
+- `max_hours`: (Optional) The maximum number of hours each process can run for. This number is used in the adaptive parallelization scheme. Defaults to 4.
+
+Upon successful completion of the pipeline, the results will be written to disk in RDS format at the location requested. The results are in the same format as returned by `check_simulatr_specifier_object()`; see ["simulatr on your laptop"](https://katsevich-lab.github.io/simulatr/articles/example-local.html).
+
+# 5. Summarize and/or visualize the results
+
+Read the results from disk using `readRDS()`. The rest is the same as in ["simulatr on your laptop"](https://katsevich-lab.github.io/simulatr/articles/example-local.html).

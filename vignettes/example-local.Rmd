@@ -1,5 +1,5 @@
 ---
-title: "`simulatr` on your laptop"
+title: "simulatr on your laptop"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{simulatr on your laptop}
@@ -139,9 +139,9 @@ check_results <- check_simulatr_specifier_object(simulatr_spec, B_in = 2)
 ```
 This message tells us that the simulation did not encounter any errors for the first two data realizations. We are free to move on to running the full simulation.
    
-# 4. Run the simulation
+# 4. Run the simulation on your laptop
 
-Since this example simulation is small, we can run it in RStudio:
+Since this example simulation is small, we can run it on your laptop in RStudio:
 ```{r}
 sim_results <- check_simulatr_specifier_object(simulatr_spec)
 ```
