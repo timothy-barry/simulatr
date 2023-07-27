@@ -170,7 +170,7 @@ check_simulatr_specifier_object <- function(simulatr_spec, B_in = NULL, return_d
     }) |>
       dplyr::bind_rows() |>
       dplyr::group_by(grid_id, method, metric) |>
-      dplyr::summarise(mean = mean(value), se = sd(value)/sqrt(dplyr::n()), .groups = "drop") |>
+      dplyr::summarise(mean = mean(value), se = sd(x = value, na.rm = TRUE)/sum(!is.na(value)), .groups = "drop") |>
       dplyr::left_join(simulatr_spec@parameter_grid |> 
                          dplyr::mutate(grid_id = dplyr::row_number()) |> 
                          dplyr::select(-ground_truth), 
