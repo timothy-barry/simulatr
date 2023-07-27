@@ -61,3 +61,22 @@ create_param_grid_two_way_factorial <- function(param_vals, arm_names, arm_param
   out$grid_id <- seq(1, nrow(out))
   return(out)
 }
+
+
+#' Add ground truth inferential targets to parameter grid
+#'
+#' @param parameter_grid The parameter grid
+#' @param get_ground_truth A function that inputs a subset of the parameters and
+#' outputs an object containing the ground truth inferential target(s).
+#'
+#' @return An updated parameter grid
+#' @export
+add_ground_truth <- function(parameter_grid, get_ground_truth) {
+  parameter_grid |>
+    dplyr::rowwise() |>
+    dplyr::mutate(ground_truth = list(do.call(
+      get_ground_truth,
+      rlang::parse_exprs(!!formalArgs(get_ground_truth))
+    ))) |>
+    dplyr::ungroup()
+}

@@ -8,7 +8,8 @@ simulatr_specifier(
   parameter_grid,
   fixed_parameters,
   generate_data_function,
-  run_method_functions
+  run_method_functions,
+  evaluation_functions = list()
 )
 }
 \arguments{
@@ -19,6 +20,8 @@ simulatr_specifier(
 \item{generate_data_function}{a \code{simulatr_function} that generates the data}
 
 \item{run_method_functions}{a named list of \code{simulatr_functions} that define the methods to be run in the simulation}
+
+\item{evaluation_functions}{a named list of functions that define the metrics used to evaluate each method}
 }
 \value{
 a \code{simulatr_specifier} object

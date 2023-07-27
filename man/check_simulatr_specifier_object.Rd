@@ -4,12 +4,19 @@
 \alias{check_simulatr_specifier_object}
 \title{Check simulatr specifier object}
 \usage{
-check_simulatr_specifier_object(simulatr_spec, B_in = NULL, parallel = TRUE)
+check_simulatr_specifier_object(
+  simulatr_spec,
+  B_in = NULL,
+  return_data = FALSE,
+  parallel = TRUE
+)
 }
 \arguments{
 \item{simulatr_spec}{a simulatr_specifier object}
 
 \item{B_in}{(default determined by simulatr_spec) number of resamples to use}
+
+\item{return_data}{(default false) whether to return the data}
 
 \item{parallel}{(default true) parallelize execution?}
 }

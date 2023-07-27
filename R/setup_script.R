@@ -31,6 +31,22 @@ setup_script <- function(simulatr_spec, B_in, function_object, row_idx) {
   return(list(simulatr_spec = simulatr_spec, ordered_args = ordered_args))
 }
 
+#' Get ordered arguments for function object
+#'
+#' @param function_object The function object
+#' @param simulatr_spec Simulatr specifier object
+#' @param row_idx The row of the parameter grid from which to get parameter values
+#'
+#' @return List of ordered arguments
+#' @export
+get_ordered_args <- function(function_object, simulatr_spec, row_idx){
+  if (identical(function_object@arg_names, NA_character_)) {
+    list()
+  } else {
+    lapply(function_object@arg_names, function(curr_arg)
+      get_param_from_simulatr_spec(simulatr_spec, row_idx, curr_arg))
+  }
+}
 
 #' Collate result list
 #'
@@ -43,12 +59,12 @@ setup_script <- function(simulatr_spec, B_in, function_object, row_idx) {
 #' @export
 collate_result_list <- function(result_df, proc_id, row_idx, method) {
   colnames_result_df <- colnames(result_df)
-  convert_to_factor <- c(c("run_id", "proc_id", "grid_row_id", "method", "id"),
+  convert_to_factor <- c(c("method"),
                          if ("parameter" %in% colnames_result_df) "parameter" else NULL,
                          if ("target" %in% colnames_result_df) "target" else NULL)
 
   out <- result_df %>% dplyr::mutate(proc_id = proc_id,
-                              grid_row_id = row_idx,
+                              grid_id = row_idx,
                               method = method,
                               id = paste0(method, "-",
                                           row_idx, "-",

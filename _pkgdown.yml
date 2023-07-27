@@ -1,0 +1,18 @@
+url: katsevich-lab.github.io/simulatr/
+
+authors:
+  "Timothy Barry":
+    href: https://timothy-barry.github.io/
+  "Eugene Katsevich":
+    href: https://ekatsevi.github.io/
+
+development:
+  mode: auto
+
+template:
+  bootstrap: 5
+
+navbar:
+  structure:
+    left:  [intro, articles, news]
+    right: [search, github]

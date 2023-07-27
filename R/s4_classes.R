@@ -9,7 +9,7 @@ simulatr_function <- setClass("simulatr_function",
 
 check_validity_simulatr_specifier <- function(object) {
   all_params <- union(colnames(object@parameter_grid), names(object@fixed_parameters))
-  key_params_included <- sapply(c("B", "seed", "n_processors"), function(i) i %in% all_params)
+  key_params_included <- sapply(c("B", "seed"), function(i) i %in% all_params)
   if (all(key_params_included)) {
     out <- TRUE
   } else {
@@ -25,5 +25,6 @@ simulatr_specifier <- setClass("simulatr_specifier",
                                slots = list(parameter_grid = "data.frame",
                                             fixed_parameters = "list",
                                             generate_data_function = "simulatr_function",
-                                            run_method_functions = "list"),
+                                            run_method_functions = "list",
+                                            evaluation_functions = "list"),
                                validity = check_validity_simulatr_specifier)

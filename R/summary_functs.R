@@ -192,3 +192,26 @@ compute_count <- function(tbl) {
   count <- tbl$id %>% as.character() %>% unique() %>% length()
   dplyr::tibble(value = count, lower_mc_ci = NA, upper_mc_ci = NA)
 }
+
+
+#' Evaluate the FDP of a discovery set
+#'
+#' @param output The output of a method, an object that must contain the field nonnulls
+#' @param ground_truth The ground truth, an object that must contain the field nonnulls
+#'
+#' @return The FDP
+#' @export
+fdp = function(output, ground_truth){
+  length(setdiff(output$nonnulls, ground_truth$nonnulls))/max(1, length(output$nonnulls))
+}
+
+#' Evaluate the power of a discovery set
+#'
+#' @param output The output of a method, an object that must contain the field nonnulls
+#' @param ground_truth The ground truth, an object that must contain the field nonnulls
+#'
+#' @return The power
+#' @export
+power = function(output, ground_truth){
+  length(intersect(output$nonnulls, ground_truth$nonnulls))/max(1, length(ground_truth$nonnulls))
+}
