@@ -4,7 +4,7 @@
 #'
 #' @param simulatr_spec a simulatr_specifier object
 #' @param B_in (default determined by simulatr_spec) number of resamples to use
-#' @param return_data (default false) whether to return the data 
+#' @param return_data (default false) whether to return the data
 #' @param parallel (default true) parallelize execution?
 #'
 #' @return if no errors, the list of results; if errors occur, the ordered list of arguments passed to the function in which the error occurred.
@@ -43,7 +43,7 @@ check_simulatr_specifier_object <- function(simulatr_spec, B_in = NULL, return_d
 
   # extract the seed
   seed <- simulatr_spec@fixed_parameters$seed
-  
+
   cat("Generating data...\n")
   # Generate the synthetic data
   data_generation_out <- my_lapply(X = seq(1, n_param_settings), FUN = function(row_idx) {
@@ -117,7 +117,7 @@ check_simulatr_specifier_object <- function(simulatr_spec, B_in = NULL, return_d
           for (i in seq(1, length(data_list))) {
             ordered_args[[1]] <- data_list[[i]]
             out <- dplyr::tibble(
-              output = list(R.utils::withSeed(do.call(method_object@f, ordered_args), 
+              output = list(R.utils::withSeed(do.call(method_object@f, ordered_args),
                                               seed = seed)),
               run_id = i
             )
@@ -152,35 +152,35 @@ check_simulatr_specifier_object <- function(simulatr_spec, B_in = NULL, return_d
     cat(paste0("\nSUMMARY: There are ", n_warnings, " warnings (see above). Otherwise, simulatr specifier object is specified correctly.\n"))
   }
   results <- do.call(what = rbind, args = result_lists)
-  
+
   # join the results with the parameter grid
-  results_joined <- results |> 
-    dplyr::left_join(simulatr_spec@parameter_grid |> 
-                dplyr::mutate(grid_id = dplyr::row_number()) |> 
-                dplyr::select(grid_id, ground_truth), 
+  results_joined <- results |>
+    dplyr::left_join(simulatr_spec@parameter_grid |>
+                dplyr::mutate(grid_id = dplyr::row_number()) |>
+                dplyr::select(grid_id, ground_truth),
               by = "grid_id")
-  
+
   # evaluate the metrics
   if(length(simulatr_spec@evaluation_functions) > 0){
     metrics <- lapply(names(simulatr_spec@evaluation_functions), function(fun_name){
-      results_joined |> 
+      results_joined |>
         dplyr::rowwise() |>
         dplyr::mutate(metric = fun_name, value = simulatr_spec@evaluation_functions[[fun_name]](output, ground_truth)) |>
         dplyr::ungroup()
     }) |>
       dplyr::bind_rows() |>
       dplyr::group_by(grid_id, method, metric) |>
-      dplyr::summarise(mean = mean(value), se = sd(x = value, na.rm = TRUE)/sum(!is.na(value)), .groups = "drop") |>
-      dplyr::left_join(simulatr_spec@parameter_grid |> 
-                         dplyr::mutate(grid_id = dplyr::row_number()) |> 
-                         dplyr::select(-ground_truth), 
+      dplyr::summarise(mean = mean(value), se = sd(x = value, na.rm = TRUE)/sqrt(sum(!is.na(value))), .groups = "drop") |>
+      dplyr::left_join(simulatr_spec@parameter_grid |>
+                         dplyr::mutate(grid_id = dplyr::row_number()) |>
+                         dplyr::select(-ground_truth),
                        by = "grid_id") |>
       dplyr::select(-grid_id) |>
       dplyr::relocate(method, metric, mean, se)
   } else{
     metrics <- NULL
   }
-  
+
   # return
   output <- list(
     results = results,
