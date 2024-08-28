@@ -168,6 +168,18 @@ parallelization scheme. Defaults to 8.</li>
 <code>max_hours</code>: (Optional) The maximum number of hours each
 process can run for. This number is used in the adaptive parallelization
 scheme. Defaults to 4.</li>
+<li>
+<code>time_fudge_factor</code>: a positive real number indicating
+how liberal or conservative we should be in estimating the number of
+processors to use for a given method-grid row pair. A number in the
+interval (0,1) indicates that we should be <em>conservative</em> (i.e.,
+request more processors than is probably necessary), while a number in
+the interval <span class="math inline">\((1, \infty)\)</span> indicates
+that we should be <em>liberal</em> (i.e., request fewer processors than
+is probably necessary). The default is 0.8.</li>
+<li>
+<code>mem_fudge_factor</code>: Similar to
+<code>time_fudge_factor</code>, but for memory.</li>
 </ul>
 <p>Upon successful completion of the pipeline, the results will be
 written to disk in RDS format at the location requested. The results are
