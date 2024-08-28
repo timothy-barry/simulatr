@@ -67,6 +67,8 @@ The command-line arguments are described below. Note that only the first (`simul
 - `B`: (Optional) The number of simulation replicates to run for the full simulation. Defaults to the value in the `simulatr` specifier object. You may want to set `B` to a small number during an initial trial run. 
 - `max_gb`: (Optional) The maximum number of GB each process has available. This number is used in the adaptive parallelization scheme. Defaults to 8. 
 - `max_hours`: (Optional) The maximum number of hours each process can run for. This number is used in the adaptive parallelization scheme. Defaults to 4.
+- `time_fudge_factor`: a positive real number indicating how liberal or conservative we should be in estimating the number of processors to use for a given method-grid row pair. A number in the interval (0,1) indicates that we should be *conservative* (i.e., request more processors than is probably necessary), while a number in the interval $(1, \infty)$ indicates that we should be *liberal* (i.e., request fewer processors than is probably necessary). The default is 0.8.
+- `mem_fudge_factor`: Similar to `time_fudge_factor`, but for memory.
 
 Upon successful completion of the pipeline, the results will be written to disk in RDS format at the location requested. The results are in the same format as returned by `check_simulatr_specifier_object()`; see ["simulatr on your laptop"](https://katsevich-lab.github.io/simulatr/articles/example-local.html).
 
